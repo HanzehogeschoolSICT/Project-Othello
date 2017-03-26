@@ -12,7 +12,7 @@ public class ServerOut {
     private PrintWriter out;
 
     /**
-     * Connects with the game server
+     * Connects with the game server, and imediatly logs in.
      * @param name To login as
      * @param hostname ip adress of game server
      * @param port port of game server
@@ -23,11 +23,13 @@ public class ServerOut {
         Socket socket = new Socket(hostname, port);
 
         if (socket.isConnected()) {
-            System.out.println("Connected on: " + hostname + ":" + port);
+            System.out.println("Connected on: " + hostname + ":" + port + "\n ");
         }
 
+        // Create a printwriter, autoflush is enabled
         out = new PrintWriter(socket.getOutputStream(), true);
 
+        // Create a seperate thread to handle incoming responses
         serverIn = new ServerIn(socket.getInputStream());
         new Thread(serverIn).start();
 
@@ -38,11 +40,12 @@ public class ServerOut {
             e.printStackTrace();
         }
 
+        // Execute the login command
         out.println("login " + name);
     }
 
     /**
-     * Execute a command fromt System.in
+     * Execute a command from System.in,
      */
     public void readFromConsole(){
         Scanner reader = new Scanner(System.in);
