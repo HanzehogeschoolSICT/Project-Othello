@@ -15,17 +15,18 @@ public class TicTacToeAI extends AIClass {
             return -1;
         }
         processMove(input, 'p');				//the control class is supposed to process the moves depending on if the server accepts them
-        processMove(calculateMove(), 'c');
+        move = calculateMove();
+        processMove(move, 'c');
         return move;
     }
     
     public int calculateMove(){
 		Random random = new Random();
-        move = random.nextInt(64);
-        while(movesDone.contains(move)){
-            move = random.nextInt(9);
+        int newMove = random.nextInt(9);
+        while(movesDone.contains(newMove)){
+            newMove = random.nextInt(64);
         }
-        return move;
+        return newMove;
 	}
 
     @Override
