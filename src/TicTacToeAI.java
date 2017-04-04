@@ -12,7 +12,7 @@ public class TicTacToeAI extends AIClass {
     @Override
     public int getNewMove(int input) {
         if(movesDone.contains(input) || movesDone.size() == 9){
-            return -1;
+            return move;
         }
         if (input != -1){
         	processMove(input, 'p');				//the control class is supposed to process the moves depending on if the server accepts them
