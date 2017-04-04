@@ -14,7 +14,9 @@ public class TicTacToeAI extends AIClass {
         if(movesDone.contains(input) || movesDone.size() == 9){
             return -1;
         }
-        processMove(input, 'p');				//the control class is supposed to process the moves depending on if the server accepts them
+        if (input != -1){
+        	processMove(input, 'p');				//the control class is supposed to process the moves depending on if the server accepts them
+        }
         move = calculateMove();
         processMove(move, 'c');
         return move;
@@ -24,7 +26,7 @@ public class TicTacToeAI extends AIClass {
 		Random random = new Random();
         int newMove = random.nextInt(9);
         while(movesDone.contains(newMove)){
-            newMove = random.nextInt(64);
+            newMove = random.nextInt(9);
         }
         return newMove;
 	}

@@ -15,7 +15,9 @@ public class OrthelloAI extends AIClass {
         if(movesDone.contains(input) || movesDone.size() == 64){
             return -1;
         }
-        processMove(input, 'p');				//the control class is supposed to process the moves depending on if the server accepts them
+        if (input != -1){
+        	processMove(input, 'p');				//the control class is supposed to process the moves depending on if the server accepts them
+        }
         move = calculateMove();
         processMove(move, 'c');
         return move;
