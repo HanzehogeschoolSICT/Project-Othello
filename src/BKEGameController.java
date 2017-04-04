@@ -10,7 +10,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 /**
- * TODO: Status labels updaten zonder dat de boel vastloopt. AI Correct toevoegen en Forfeit doorgeven aan main form.
+ * TODO: Status labels updaten zonder dat de boel vastloopt.
  * Gebruikte bronnen: Introduction to Java Programming.
  */
 public class BKEGameController {
