@@ -1,10 +1,13 @@
-import sun.net.ConnectionResetException;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Observable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +22,9 @@ public class ServerIn implements Runnable {
     private boolean Connected = false;
     private String message = "";
     private String move = "";
+    private boolean eog = false;
+    private String turn = "";
+    private ObservableList<String> options = FXCollections.observableArrayList();
 
     ServerIn(InputStream in) throws IOException {
         inReader = new BufferedReader(new InputStreamReader(in));
@@ -44,6 +50,16 @@ public class ServerIn implements Runnable {
             System.out.print("");
             move = line;
         }
+        if (line.contains("YOURTURN")) {
+            turn = line;
+        }
+        if(line.contains("SVR GAME LOSS") || line.contains("SVR GAME DRAW") || line.contains("SVR GAME WIN")){
+            eog=true;
+        }
+        if (line.contains("PLAYERTOMOVE")) {
+            message = line;
+        }
+
     }
 
     /**
@@ -54,41 +70,25 @@ public class ServerIn implements Runnable {
     private void SVRparser(String line) throws IOException {
         // Gamelist return
         if (line.matches("^SVR GAMELIST.*")) {
-            System.out.println(parseArray(line));
+            //System.out.println(parseArray(line));
             System.out.println("playerlist done");
         }
 
         // Playerlist return
         if (line.matches("^SVR PLAYERLIST.*")) {
-            parseArray(line);
-        }
-        if (line.contains("SVR GAME MATCH")) {
-            Connected = true;
+            createPlayerList(line);
         }
     }
 
-    /**
-     * Parses the array vale from the Input string
-     * Example: SVR GAMELIST {"HELLO", "WORLD"}
-     * Returns arraylist with HELLO and WORLD
-     * TODO prevent wrong parsing with strings containing " character. Example: SVR gamelist {"not", "work" ing"}
-     *
-     * @param line
-     * @return
-     */
-    private ArrayList<String> parseArray(String line) {
+
+    private void createPlayerList(String line) {
         Pattern p = Pattern.compile("\"(.*?)\"");
         Matcher matcher = p.matcher(line);
         ArrayList<String> acc = new ArrayList<>();
-
-        System.out.println(matcher.groupCount());
-//        for (int i = 0; i < matcher.groupCount(); i++){
-//            System.out.println("loop");
-//            System.out.println(matcher.group(i));
-//            acc.add(matcher.group(i));
-//        }
-
-        return acc;
+        while(matcher.find()){
+            String s = matcher.group();
+            options.add(s);
+        }
     }
 
     /**
@@ -104,7 +104,7 @@ public class ServerIn implements Runnable {
                 String inLine = inReader.readLine();
                 System.out.println(inLine);
                 this.parse(inLine);
-            } catch (ConnectionResetException e) {
+            } catch (SocketException e) {
                 stop = true;
                 System.out.println("Closing listening connection");
             } catch (IOException e) {
@@ -119,14 +119,38 @@ public class ServerIn implements Runnable {
     }
 
     public boolean getConnected() {
+        System.out.print("");
         return Connected;
     }
 
     public String getMsg() {
         return message;
     }
+
+    public boolean eogMsg(){
+        return eog;
+    }
     public String getMove() {
         System.out.print("");
         return move;
+    }
+
+    public String getTurn(){
+        return turn;
+    }
+    public ObservableList<String> returnOptions(){
+        return options;
+    }
+
+    public void resetTurn(){
+        turn = "";
+    }
+
+    public void Reset(){
+        message = "";
+        eog = false;
+        move = "";
+        turn = "";
+        Connected = false;
     }
 }

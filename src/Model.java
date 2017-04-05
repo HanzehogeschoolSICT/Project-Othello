@@ -1,5 +1,5 @@
-import java.io.*;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -18,7 +18,6 @@ public class Model{
         connected = true;
     }
 
-    public void waitForPlayers(){}
 
     public Socket returnSocket() throws IOException{
         return socket;
