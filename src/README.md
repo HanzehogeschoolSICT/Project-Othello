@@ -1,2 +1,0 @@
-# Project-Othello
-Games bot
