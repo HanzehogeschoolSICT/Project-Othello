@@ -1,11 +1,11 @@
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import sun.net.ConnectionResetException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.regex.Matcher;
@@ -23,6 +23,7 @@ public class ServerIn implements Runnable {
     private String message = "";
     private String move = "";
     private boolean eog = false;
+    private boolean challenge = false;
     private String turn = "";
     private ObservableList<String> options = FXCollections.observableArrayList();
 
@@ -57,6 +58,11 @@ public class ServerIn implements Runnable {
             eog=true;
         }
         if (line.contains("PLAYERTOMOVE")) {
+            message = line;
+        }
+        if (line.contains("SVR GAME CHALLENGE")) {
+            System.out.print("");
+            challenge = true;
             message = line;
         }
 
@@ -104,7 +110,7 @@ public class ServerIn implements Runnable {
                 String inLine = inReader.readLine();
                 System.out.println(inLine);
                 this.parse(inLine);
-            } catch (SocketException e) {
+            } catch (ConnectionResetException e) {
                 stop = true;
                 System.out.println("Closing listening connection");
             } catch (IOException e) {
@@ -121,6 +127,11 @@ public class ServerIn implements Runnable {
     public boolean getConnected() {
         System.out.print("");
         return Connected;
+    }
+
+    public boolean getChallenge(){
+        System.out.print("");
+        return challenge;
     }
 
     public String getMsg() {

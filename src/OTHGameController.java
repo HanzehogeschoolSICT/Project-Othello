@@ -1,6 +1,5 @@
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -14,7 +13,7 @@ import javafx.stage.Window;
  * TODO: Status labels updaten zonder dat de boel vastloopt.
  * Gebruikte bronnen: Introduction to Java Programming.
  */
-public class BKEGameController {
+public class OTHGameController {
     @FXML private Button quitButton;
     @FXML private Label statusLabel;
     @FXML private GridPane gridPane;
@@ -24,14 +23,14 @@ public class BKEGameController {
 
     private Model model;
     private ServerIn sIn;
-    private Cell[][] cell = new Cell[3][3];
+    private Cell[][] cell = new Cell[8][8];
     private int rowSelected;
     private int columnSelected;
 
     private String ownName;
     private String opponentName;
-    private String ownToken;
-    private String oppToken;
+    private char ownToken;
+    private char oppToken;
     private Window oldWindow;
 
     private String lastMsg = "";
@@ -43,11 +42,10 @@ public class BKEGameController {
     private boolean withAI;
     private int moveToDo;
     int check = 1;
+    OthelloAI othAI;
+    OthelloBoard board;
 
-    TicTacToeAI bkeAI = new TicTacToeAI();
-
-
-    public BKEGameController(){}
+    public OTHGameController(){}
 
     public void initData(Model conModel, ServerIn consIn, String name, Window window, boolean AI) throws InterruptedException{
         ownName = name;
@@ -57,28 +55,22 @@ public class BKEGameController {
         oldWindow = window;
         ownNameLabel.setText(ownName);
         withAI = AI;
+
     }
 
-    @FXML
-    private void initialize(){
-        for (int i=0; i<3; i++){
-            for(int j = 0; j<3; j++){
-                gridPane.add(cell[i][j] = new Cell(i, j), j, i);
+    public void generateBoard(){
+        for(int x = 0; x < 8; x++) {
+            String line = "";
+            for(int y = 0; y < 8; y++) {
+                OthelloCoordinate coord = board.getCoordinate(x, y);
+                if(coord == null) {
+                    line+="";
+                } else {
+                    setTeken(x, y,coord.getToken());
+                }
             }
-        }
-    }
 
-    public void resetBoard(){
-        for (int i=0; i<3; i++){
-            for(int j = 0; j<3; j++){
-                cell[i][j].getChildren().clear();
-            }
         }
-        sIn.Reset();
-        check = 1;
-        opponentName = "";
-        ownToken = "";
-        oppToken = "";
     }
 
     public void controlGame() throws InterruptedException{
@@ -96,24 +88,34 @@ public class BKEGameController {
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + ownName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
                                 System.out.println(opponentName);
-                                ownToken = "X";
-                                oppToken = "O";
-                                moveToDo = bkeAI.getNewMove(-1);
+                                ownToken = 'W';
+                                oppToken = 'B';
+                                if(withAI){
+                                    othAI = new OthelloAI('W');
+                                } else {
+                                    board = new OthelloBoard('W');
+                                }
+                                generateBoard();
+                                //moveToDo = othAI.getNewMove(-1);
                                 Platform.runLater(() -> ownNameLabel.setText("Ik ben X"));
                                 Platform.runLater(() -> oppNameLabel.setText(oppNameLabel.getText() + " is  O"));
-                                Platform.runLater(() -> turnLabel.setText("Jij bent aan de beurt!!! hier zou die moeten beginnen"));
-
                                 check = 2;
                                 lastMsg = sIn.getMsg();
                             }
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + opponentName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
                                 System.out.println(opponentName);
-                                ownToken = "O";
-                                oppToken = "X";
+                                ownToken = 'B';
+                                oppToken = 'W';
+                                myTurn = true;
+                                if(withAI){
+                                    othAI = new OthelloAI('B');
+                                } else {
+                                    board = new OthelloBoard('B');
+                                }
+                                generateBoard();
                                 Platform.runLater(() -> ownNameLabel.setText("Ik ben O"));
                                 Platform.runLater(() -> oppNameLabel.setText(oppNameLabel.getText() + " is X"));
-                                Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!!hier zou die moeten beginnen"));
                                 check = 2;
                                 lastMsg = sIn.getMsg();
                             }
@@ -125,22 +127,21 @@ public class BKEGameController {
                 while(check==2) {
                     String message = sIn.getMove();
                     if(!message.equals(lastMove)){
-                    if(message.contains(opponentName)){
-                        Platform.runLater(() -> turnLabel.setText("Jij bent aan de beurt!!! deze veranderd"));
-                        String msg = message;
-                        msg = msg.substring(msg.indexOf("MOVE:") + 7, msg.length()-15);
-                        int move = Integer.parseInt(msg);
-                        Platform.runLater(() -> setTeken((move / 3), (move % 3), oppToken));
-                        if(withAI) {
-                            System.out.print("");
-                            moveToDo = bkeAI.getNewMove(move);
-                            //bkeAI.printBoard();
-                        }
-                        lastMove=message;
-                    }}
-                    if(!message.contains(opponentName)){
-                        Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!! deze veranderd"));
-                    }
+                        if(message.contains(opponentName)){
+                            Platform.runLater(() -> statusLabel.setText("Tegenstander is aan de beurt, berijdt je voor!"));
+                            String msg = message;
+                            msg = msg.substring(msg.indexOf("MOVE:") + 7, msg.length()-15);
+                            int move = Integer.parseInt(msg);
+                            board.addCoordinate(move, oppToken);
+                            generateBoard();
+                            //Platform.runLater(() -> setTeken((move / 8), (move % 8), oppToken));
+                            if(withAI) {
+                                System.out.print("");
+                                moveToDo = othAI.getNewMove(move);
+                                //bkeAI.printBoard();
+                            }
+                            lastMove=message;
+                        }}
                     if(sIn.eogMsg()){
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
                         System.out.print("");
@@ -148,26 +149,22 @@ public class BKEGameController {
                         Thread.currentThread().interrupt();
                     }
                     if(!lastTurn.equals(sIn.getTurn())){
-//                        Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!! deze veranderd"));
-                    if(sIn.getTurn().contains("YOURTURN")){
-//                        Platform.runLater(() -> turnLabel.setText("Je bent aan de beurt! Snel, doe een zet!"));
+                        if(sIn.getTurn().contains("YOURTURN")){
+                            myTurn = true;
+                            if(withAI){
+                                sIn.resetTurn();
+                                //Platform.runLater(() -> setTeken((moveToDo / 8), (moveToDo % 8), ownToken));
+                                //System.out.println("DEZE MOVE VERNEUKT ALLES" + moveToDo);
+                                model.sendToServer("move " + moveToDo);
+                                //bkeAI.printBoard();
+                            }
+                            lastTurn=sIn.getTurn();
+                            /**
+                             * FIXME Als je dit toevoegd gaat er iets heel fout.
+                             * Platform.runLater(() -> statusLabel.setText("Je bent aan de beurt! Snel, doe een zet!"));
+                             */
+                        }} else if(sIn.getTurn().contains("YOURTURN") ){
                         myTurn = true;
-                        if(withAI){
-                            sIn.resetTurn();
-                            Platform.runLater(() -> setTeken((moveToDo / 3), (moveToDo % 3), ownToken));
-                            //System.out.println("DEZE MOVE VERNEUKT ALLES" + moveToDo);
-                            model.sendToServer("move " + moveToDo);
-                            //bkeAI.printBoard();
-                        }
-                        lastTurn=sIn.getTurn();
-
-//                         FIXME Als je dit toevoegd gaat er iets heel fout.
-
-
-                    }} else if(sIn.getTurn().contains("YOURTURN") ){
-                        myTurn = true;
-
-
                     }
                     if(withAI){
                         Thread.sleep(1250);
@@ -184,41 +181,53 @@ public class BKEGameController {
     }
 
     @FXML
+    private void initialize(){
+        for (int i=0; i<8; i++){
+            for(int j = 0; j<8; j++){
+                gridPane.add(cell[i][j] = new Cell(i, j), j, i);
+            }
+        }
+    }
+
+    @FXML
     public void doQuit(){
-        resetBoard();
-        bkeAI.reset();
+        //resetBoard();
+        //othAI.reset();
         Stage primaryStage = (Stage)oldWindow;
         primaryStage.show();
         model.sendToServer("forfeit");
         gridPane.getScene().getWindow().hide();
     }
 
-    private synchronized void setTeken(int row, int column, String token) {
-            lastMsg = "";
-            lastMove = "";
-            Label label = new Label();
-            //if(whoseTurn==0){label.setText("\n      X");}
-            // else if(whoseTurn==1){label.setText("\n      O");}
-            label.setText("\n      "+token);
-            label.setFont(new Font("Arial", 30));
-            label.setAlignment(Pos.CENTER);
-            cell[row][column].getChildren().add(label);
-            rowSelected = row;
-            columnSelected = column;
-            System.out.print("");
+    private synchronized void setTeken(int row, int column, char token) {
+        lastMsg = "";
+        lastMove = "";
+        //Label label = new Label();
+        //if(whoseTurn==0){label.setText("\n      X");}
+        // else if(whoseTurn==1){label.setText("\n      O");}
+        //label.setText(token);
+        if(token=='B'){
+            Platform.runLater(() -> cell[row][column].setStyle("-fx-background-color: black"));
+        } else if(token=='W'){
+            Platform.runLater(() -> cell[row][column].setStyle("-fx-background-color: white"));
+        }
+        //label.setFont(new Font("Arial", 30));
+        //label.setAlignment(Pos.CENTER);
+        //cell[row][column].getChildren().add(label);
+        rowSelected = row;
+        columnSelected = column;
+        System.out.print("");
 
     }
 
-
     public class Cell extends GridPane {
-        private String teken;
         private int row;
         private int column;
 
         public Cell(int row, int column){
             this.row = row;
             this.column = column;
-            setStyle("-fx-border-color: black");
+            setStyle("-fx-border-color: grey");
             this.setPrefSize(2000, 2000);
             this.setOnMouseClicked(e -> handleMouseClick());
 
@@ -227,10 +236,12 @@ public class BKEGameController {
         private void handleMouseClick(){
             if(!withAI) {
                 if (myTurn) {
-                    Platform.runLater(() -> setTeken(row, column, ownToken));
-                    model.sendToServer("move " + (row * 3 + column));
-                    sIn.resetTurn();
-                    myTurn = false;
+                    board.addCoordinate(row,column,ownToken);
+                    generateBoard();
+                //Platform.runLater(() -> setTeken(row, column, ownToken));
+                model.sendToServer("move " + (row * 8 + column));
+                sIn.resetTurn();
+                myTurn = false;
                 }
             }
         }
