@@ -134,7 +134,8 @@ public class Controller {
                                 Stage gamestage = new Stage();
                                 gamestage.setScene(new Scene(loader.load()));
                                 OTHGameController gamecontroller = loader.<OTHGameController>getController();
-                                gamecontroller.initData(model, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+                                gamecontroller.initModel(model, sIn);
+                                gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow(), bot);
                                 loginButton.getScene().getWindow().setOnHidden(e -> {
                                     subscribeButton.setDisable(false);
                                     connectionLabel.setText("Match bezig of klaar!");

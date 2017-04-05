@@ -47,15 +47,29 @@ public class OTHGameController {
 
     public OTHGameController(){}
 
-    public void initData(Model conModel, ServerIn consIn, String name, Window window, boolean AI) throws InterruptedException{
+    public void initData(String name, Window window, boolean AI) throws InterruptedException{
         ownName = name;
-        model = conModel;
-        sIn = consIn;
-        controlGame();
         oldWindow = window;
         ownNameLabel.setText(ownName);
         withAI = AI;
+        controlGame();
+    }
+    public void initModel(Model conModel, ServerIn consIn){
+        model = conModel;
+        sIn = consIn;
+    }
 
+    public void initToken(char owntok, char opptok){
+        ownToken = owntok;
+        oppToken = opptok;
+    }
+
+    public void updateLabel(Label upLabel, String text){
+        Platform.runLater(() -> upLabel.setText(text));
+    }
+
+    public void sendCommand(String cmd){
+        model.sendToServer(cmd);
     }
 
     public void generateBoard(){
@@ -82,14 +96,13 @@ public class OTHGameController {
                         if (!sIn.getMsg().equals("")) {
                             if (sIn.getMsg().contains("PLAYERTOMOVE")) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
-                                Platform.runLater(() -> oppNameLabel.setText(opponentName));
+                                updateLabel(oppNameLabel, opponentName);
                                 lastMsg = sIn.getMsg();
                             }
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + ownName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
                                 System.out.println(opponentName);
-                                ownToken = 'W';
-                                oppToken = 'B';
+                                initToken('W', 'B');
                                 if(withAI){
                                     othAI = new OthelloAI('W');
                                 } else {
@@ -97,16 +110,15 @@ public class OTHGameController {
                                 }
                                 generateBoard();
                                 //moveToDo = othAI.getNewMove(-1);
-                                Platform.runLater(() -> ownNameLabel.setText("Ik ben X"));
-                                Platform.runLater(() -> oppNameLabel.setText(oppNameLabel.getText() + " is  O"));
+                                updateLabel(ownNameLabel, "Ik ben X");
+                                updateLabel(oppNameLabel, oppNameLabel.getText() + " is  O");
                                 check = 2;
                                 lastMsg = sIn.getMsg();
                             }
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + opponentName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
                                 System.out.println(opponentName);
-                                ownToken = 'B';
-                                oppToken = 'W';
+                                initToken('B', 'W');
                                 myTurn = true;
                                 if(withAI){
                                     othAI = new OthelloAI('B');
@@ -114,8 +126,8 @@ public class OTHGameController {
                                     board = new OthelloBoard('B');
                                 }
                                 generateBoard();
-                                Platform.runLater(() -> ownNameLabel.setText("Ik ben O"));
-                                Platform.runLater(() -> oppNameLabel.setText(oppNameLabel.getText() + " is X"));
+                                updateLabel(ownNameLabel, "Ik ben O");
+                                updateLabel(oppNameLabel, opponentName+" is X");
                                 check = 2;
                                 lastMsg = sIn.getMsg();
                             }
@@ -128,9 +140,8 @@ public class OTHGameController {
                     String message = sIn.getMove();
                     if(!message.equals(lastMove)){
                         if(message.contains(opponentName)){
-                            Platform.runLater(() -> statusLabel.setText("Tegenstander is aan de beurt, berijdt je voor!"));
-                            String msg = message;
-                            msg = msg.substring(msg.indexOf("MOVE:") + 7, msg.length()-15);
+                            updateLabel(statusLabel, "Tegenstander is aan de beurt, berijdt je voor!");
+                            String msg = message.substring(message.indexOf("MOVE:") + 7, message.length()-15);
                             int move = Integer.parseInt(msg);
                             board.addCoordinate(move, oppToken);
                             generateBoard();
@@ -155,7 +166,7 @@ public class OTHGameController {
                                 sIn.resetTurn();
                                 //Platform.runLater(() -> setTeken((moveToDo / 8), (moveToDo % 8), ownToken));
                                 //System.out.println("DEZE MOVE VERNEUKT ALLES" + moveToDo);
-                                model.sendToServer("move " + moveToDo);
+                                sendCommand("move " + moveToDo);
                                 //bkeAI.printBoard();
                             }
                             lastTurn=sIn.getTurn();
@@ -195,7 +206,7 @@ public class OTHGameController {
         //othAI.reset();
         Stage primaryStage = (Stage)oldWindow;
         primaryStage.show();
-        model.sendToServer("forfeit");
+        sendCommand("forfeit");
         gridPane.getScene().getWindow().hide();
     }
 
@@ -239,7 +250,7 @@ public class OTHGameController {
                     board.addCoordinate(row,column,ownToken);
                     generateBoard();
                 //Platform.runLater(() -> setTeken(row, column, ownToken));
-                model.sendToServer("move " + (row * 8 + column));
+                sendCommand("move " + (row * 8 + column));
                 sIn.resetTurn();
                 myTurn = false;
                 }
