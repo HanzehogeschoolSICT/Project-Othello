@@ -20,6 +20,7 @@ public class Controller {
     @FXML private Button refreshButton;
     @FXML private RadioButton botRadio;
 
+    private static Controller instance = null;
     private Model model = new Model();
     private ServerIn sIn;
 
@@ -29,7 +30,14 @@ public class Controller {
     private String challengeNr;
     private String gameType;
 
+    private Boolean subsribe = false;
+    private Boolean newScrene = false;
+
     public Controller(){}
+
+
+
+
 
     @FXML private void initialize(){
     }
@@ -42,6 +50,12 @@ public class Controller {
         new Thread(sIn).start();
         model.sendToServer("get playerlist");
         playerBox.setItems(sIn.returnOptions());
+        getChallenge();
+        drawBoard();
+    }
+
+    public void getChallenge(){
+        newChallenge = false;
         new Thread(() -> {
             newChallenge = true;
             while (newChallenge){
@@ -49,72 +63,91 @@ public class Controller {
                     Platform.runLater(() -> {
                         try {
                             System.out.print("");
-                            opponent = sIn.getMsg().substring(sIn.getMsg().indexOf("CHALLENGER:")+ 13, sIn.getMsg().indexOf("\", CHALLENGENUMBER:"));
-                            challengeNr = sIn.getMsg().substring(sIn.getMsg().indexOf("CHALLENGENUMBER:")+18, sIn.getMsg().indexOf("\", GAMETYPE:"));
-                            gameType = sIn.getMsg().substring(sIn.getMsg().indexOf("GAMETYPE:")+11, sIn.getMsg().length()-2);
-                            System.out.println(opponent);
-                            System.out.println(challengeNr);
-                            System.out.println(gameType);
-                            FXMLLoader loader1 = new FXMLLoader();
-                            loader1.setLocation(ClassLoader.getSystemResource("challengeForm.fxml"));
-                            Stage challengeStage = new Stage();
-                            challengeStage.setScene(new Scene(loader1.load()));
-                            ChallengeController challengeController = loader1.<ChallengeController>getController();
-                            challengeController.initData(model,sIn,loginButton.getScene().getWindow(),opponent, challengeNr, gameType);
-                            challengeStage.show();
-                            loginButton.getScene().getWindow().hide();
+                            if(!sIn.getMsg().equals("")) {
+                                opponent = sIn.getMsg().substring(sIn.getMsg().indexOf("CHALLENGER:") + 13, sIn.getMsg().indexOf("\", CHALLENGENUMBER:"));
+                                challengeNr = sIn.getMsg().substring(sIn.getMsg().indexOf("CHALLENGENUMBER:") + 18, sIn.getMsg().indexOf("\", GAMETYPE:"));
+                                gameType = sIn.getMsg().substring(sIn.getMsg().indexOf("GAMETYPE:") + 11, sIn.getMsg().length() - 2);
+                                System.out.println(opponent);
+                                System.out.println(challengeNr);
+                                System.out.println(gameType);
+                                FXMLLoader loader1 = new FXMLLoader();
+                                loader1.setLocation(ClassLoader.getSystemResource("challengeForm.fxml"));
+                                Stage challengeStage = new Stage();
+                                challengeStage.setScene(new Scene(loader1.load()));
+                                ChallengeController challengeController = loader1.<ChallengeController>getController();
+                                challengeController.initData(model, sIn, loginButton.getScene().getWindow(), opponent, challengeNr, gameType);
+                                challengeStage.show();
+//                            loginButton.getScene().getWindow().hide();
+                            }
                         } catch(Exception ex) {
                             ex.printStackTrace();
-                    }
-                });newChallenge = false;
+                        }
+                    });newChallenge = false;
+
+                }
             }
-        }
-    }).start();
+        }).start();
+
+    }
+
+    public void drawBoard(){
+        newScrene = false;
+        newChallenge = false;
+        new Thread(() -> {
+            newScrene = true;
+            while (newScrene) {
+                if (sIn.getConnected()) {
+                    Platform.runLater(() -> {
+                        try {
+                            boolean bot = false;
+                            if(botRadio.isSelected()){bot=true;}
+                            System.out.print("");
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
+                            Stage gamestage = new Stage();
+                            gamestage.setScene(new Scene(loader.load()));
+                            BKEGameController gamecontroller = loader.<BKEGameController>getController();
+                            gamecontroller.initData(model, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+                            loginButton.getScene().getWindow().setOnHidden(e -> {
+                                subscribeButton.setDisable(false);
+                                connectionLabel.setText("Match bezig of klaar!");
+                            });
+                            gamestage.show();
+                            loginButton.getScene().getWindow().hide();
+
+                        } catch(Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    });newScrene = false;
+                }
+            }
+        }).start();
 
     }
 
     @FXML public void doRefreshPLR(){
+        playerBox.getItems().clear();
+        model.sendToServer("get playerlist");
+        playerBox.setItems(sIn.returnOptions());
+        getChallenge();
+        drawBoard();
 
     }
     @FXML void doChallenge(){
         //TODO Niet hardcoden
         System.out.println("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
         model.sendToServer("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
+//        drawBoard();
     }
 
     @FXML void doSubscribe() {
+        subsribe = true;
         if(tttRadio.isSelected()){
             model.sendToServer("subscribe Tic-tac-toe");
             subscribeButton.setDisable(true);
             connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
-            newChallenge = false;
-            new Thread(() -> {
-                boolean newScrene = true;
-                    while (newScrene) {
-                        if (sIn.getConnected()) {
-                                Platform.runLater(() -> {
-                                    try {
-                                        boolean bot = false;
-                                        if(botRadio.isSelected()){bot=true;}
-                                        System.out.print("");
-                                        FXMLLoader loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
-                                        Stage gamestage = new Stage();
-                                        gamestage.setScene(new Scene(loader.load()));
-                                        BKEGameController gamecontroller = loader.<BKEGameController>getController();
-                                        gamecontroller.initData(model, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
-                                        loginButton.getScene().getWindow().setOnHidden(e -> {
-                                            subscribeButton.setDisable(false);
-                                            connectionLabel.setText("Match bezig of klaar!");
-                                        });
-                                        gamestage.show();
-                                        loginButton.getScene().getWindow().hide();
-                                    } catch(Exception ex) {
-                                        ex.printStackTrace();
-                                    }
-                                });newScrene = false;
-                        }
-                    }
-            }).start();
+//            drawBoard();
+            subsribe = false;
+
         }
         if(othRadio.isSelected()){
 

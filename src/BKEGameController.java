@@ -1,5 +1,6 @@
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -100,6 +101,8 @@ public class BKEGameController {
                                 moveToDo = bkeAI.getNewMove(-1);
                                 Platform.runLater(() -> ownNameLabel.setText("Ik ben X"));
                                 Platform.runLater(() -> oppNameLabel.setText(oppNameLabel.getText() + " is  O"));
+                                Platform.runLater(() -> turnLabel.setText("Jij bent aan de beurt!!! hier zou die moeten beginnen"));
+
                                 check = 2;
                                 lastMsg = sIn.getMsg();
                             }
@@ -110,6 +113,7 @@ public class BKEGameController {
                                 oppToken = "X";
                                 Platform.runLater(() -> ownNameLabel.setText("Ik ben O"));
                                 Platform.runLater(() -> oppNameLabel.setText(oppNameLabel.getText() + " is X"));
+                                Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!!hier zou die moeten beginnen"));
                                 check = 2;
                                 lastMsg = sIn.getMsg();
                             }
@@ -122,7 +126,7 @@ public class BKEGameController {
                     String message = sIn.getMove();
                     if(!message.equals(lastMove)){
                     if(message.contains(opponentName)){
-                        Platform.runLater(() -> statusLabel.setText("Tegenstander is aan de beurt, berijdt je voor!"));
+                        Platform.runLater(() -> turnLabel.setText("Jij bent aan de beurt!!! deze veranderd"));
                         String msg = message;
                         msg = msg.substring(msg.indexOf("MOVE:") + 7, msg.length()-15);
                         int move = Integer.parseInt(msg);
@@ -134,6 +138,9 @@ public class BKEGameController {
                         }
                         lastMove=message;
                     }}
+                    if(!message.contains(opponentName)){
+                        Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!! deze veranderd"));
+                    }
                     if(sIn.eogMsg()){
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
                         System.out.print("");
@@ -141,7 +148,9 @@ public class BKEGameController {
                         Thread.currentThread().interrupt();
                     }
                     if(!lastTurn.equals(sIn.getTurn())){
+//                        Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!! deze veranderd"));
                     if(sIn.getTurn().contains("YOURTURN")){
+//                        Platform.runLater(() -> turnLabel.setText("Je bent aan de beurt! Snel, doe een zet!"));
                         myTurn = true;
                         if(withAI){
                             sIn.resetTurn();
@@ -151,12 +160,14 @@ public class BKEGameController {
                             //bkeAI.printBoard();
                         }
                         lastTurn=sIn.getTurn();
-                        /**
-                         * FIXME Als je dit toevoegd gaat er iets heel fout.
-                         * Platform.runLater(() -> statusLabel.setText("Je bent aan de beurt! Snel, doe een zet!"));
-                         */
+
+//                         FIXME Als je dit toevoegd gaat er iets heel fout.
+
+
                     }} else if(sIn.getTurn().contains("YOURTURN") ){
                         myTurn = true;
+
+
                     }
                     if(withAI){
                         Thread.sleep(1250);
