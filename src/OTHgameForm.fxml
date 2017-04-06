@@ -7,11 +7,11 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="580.0" xmlns="http://javafx.com/javafx/8.0.102" xmlns:fx="http://javafx.com/fxml/1" fx:controller="OTHGameController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="580.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="OTHGameController">
    <children>
       <Label layoutX="416.0" layoutY="356.0" text="Status:" />
       <Label fx:id="statusLabel" layoutX="459.0" layoutY="356.0" text="Niet verbonden" />
-      <GridPane fx:id="gridPane" gridLinesVisible="true" layoutX="8.0" layoutY="10.0" prefHeight="400.0" prefWidth="400.0">
+      <GridPane fx:id="gridPane" gridLinesVisible="true" layoutX="8.0" layoutY="10.0" prefHeight="400.0" prefWidth="400.0" style="-fx-background-color: forestgreen;">
          <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

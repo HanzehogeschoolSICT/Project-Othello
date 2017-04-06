@@ -19,12 +19,12 @@ public class OthelloAI extends AIClass {
 
     @Override
     public int getNewMove(int input) {
-    	
+
         if(movesDone.contains(input) || movesDone.size() == 64){
             return -1;
         }
         if(input != -1){
-        	processMove(input, 'p');
+            processMove(input, 'p');
         }
         move = calculateMove();
         processMove(move, 'c');
@@ -32,10 +32,14 @@ public class OthelloAI extends AIClass {
     }
 
     public int calculateMove(){
-    	possibleMoves = board.findPossibleMoves();
-        Random random = new Random();
-        int newMove = possibleMoves.get(random.nextInt(possibleMoves.size()));
-        return newMove;
+        possibleMoves = board.findPossibleMoves();
+        if(possibleMoves.size()>0){
+            Random random = new Random();
+            int newMove = possibleMoves.get(random.nextInt(possibleMoves.size()));
+            return newMove;
+        }else{
+            return -1;
+        }
     }
 
     @Override

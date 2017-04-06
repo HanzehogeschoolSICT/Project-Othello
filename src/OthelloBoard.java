@@ -103,7 +103,7 @@ public class OthelloBoard {
 		}
 	}
 
-	private boolean isValid(OthelloCoordinate coord) {
+	public boolean isValid(OthelloCoordinate coord) {
 		if(!isInBoard(coord)){
 			return false;
 		}

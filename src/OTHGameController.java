@@ -37,6 +37,8 @@ public class OTHGameController {
     private String lastMove = "";
     private String lastTurn = "";
 
+    private int finalMove;
+
 
     private boolean myTurn;
     private boolean withAI;
@@ -76,11 +78,17 @@ public class OTHGameController {
         for(int x = 0; x < 8; x++) {
             String line = "";
             for(int y = 0; y < 8; y++) {
-                OthelloCoordinate coord = board.getCoordinate(x, y);
+                OthelloCoordinate coord;
+                if(withAI){
+                    coord = othAI.board.getCoordinate(x, y);
+                } else{
+                    coord = board.getCoordinate(x, y);
+                }
+                //OthelloCoordinate coord = board.getCoordinate(x, y);
                 if(coord == null) {
                     line+="";
                 } else {
-                    setTeken(x, y,coord.getToken());
+                    setTeken(coord.getX(), coord.getY(),coord.getToken());
                 }
             }
 
@@ -102,14 +110,14 @@ public class OTHGameController {
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + ownName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
                                 System.out.println(opponentName);
-                                initToken('W', 'B');
+                                initToken('B', 'W');
                                 if(withAI){
-                                    othAI = new OthelloAI('W');
+                                    othAI = new OthelloAI('B');
+                                    moveToDo = othAI.getNewMove(-1);
                                 } else {
-                                    board = new OthelloBoard('W');
+                                    board = new OthelloBoard('B');
                                 }
                                 generateBoard();
-                                //moveToDo = othAI.getNewMove(-1);
                                 updateLabel(ownNameLabel, "Ik ben X");
                                 updateLabel(oppNameLabel, oppNameLabel.getText() + " is  O");
                                 check = 2;
@@ -118,12 +126,12 @@ public class OTHGameController {
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + opponentName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
                                 System.out.println(opponentName);
-                                initToken('B', 'W');
+                                initToken('W', 'B');
                                 myTurn = true;
                                 if(withAI){
-                                    othAI = new OthelloAI('B');
+                                    othAI = new OthelloAI('W');
                                 } else {
-                                    board = new OthelloBoard('B');
+                                    board = new OthelloBoard('W');
                                 }
                                 generateBoard();
                                 updateLabel(ownNameLabel, "Ik ben O");
@@ -138,35 +146,51 @@ public class OTHGameController {
                 System.out.print("");
                 while(check==2) {
                     String message = sIn.getMove();
-                    if(!message.equals(lastMove)){
-                        if(message.contains(opponentName)){
-                            updateLabel(statusLabel, "Tegenstander is aan de beurt, berijdt je voor!");
-                            String msg = message.substring(message.indexOf("MOVE:") + 7, message.length()-15);
-                            int move = Integer.parseInt(msg);
-                            board.addCoordinate(move, oppToken);
-                            generateBoard();
-                            //Platform.runLater(() -> setTeken((move / 8), (move % 8), oppToken));
-                            if(withAI) {
-                                System.out.print("");
-                                moveToDo = othAI.getNewMove(move);
-                                //bkeAI.printBoard();
-                            }
-                            lastMove=message;
-                        }}
                     if(sIn.eogMsg()){
+                        if(message.contains(opponentName)){
+                           String msg = message.substring(message.indexOf("MOVE:") + 7, message.indexOf(", DETAILS:")-1);
+                            int move = Integer.parseInt(msg);
+                            othAI.board.flipPaths(move, oppToken);
+                       }
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
                         System.out.print("");
                         check=0;
+                        generateBoard();
                         Thread.currentThread().interrupt();
                     }
-                    if(!lastTurn.equals(sIn.getTurn())){
+                    if(!message.equals(lastMove) && check==2){
+                        if(message.contains(opponentName)){
+                            updateLabel(statusLabel, "Tegenstander is aan de beurt, berijdt je voor!");
+                            String msg = message.substring(message.indexOf("MOVE:") + 7, message.indexOf(", DETAILS:")-1);
+                            int move = Integer.parseInt(msg);
+                            //Platform.runLater(() -> setTeken((move / 8), (move % 8), oppToken));
+                            if(withAI) {
+                                generateBoard();
+                                System.out.print("DIT IS DE MOVE DIE ALLES VERKLOOT: " + move);
+                                //othAI.board.flipPaths(move, oppToken);
+                                moveToDo = othAI.getNewMove(move);
+                                generateBoard();
+                                //bkeAI.printBoard();
+                            } else{
+                                board.flipPaths(move, oppToken);
+                                generateBoard();
+                            }
+                            lastMove=message;
+                        }}
+                    if(!lastTurn.equals(sIn.getTurn()) && check==2){
                         if(sIn.getTurn().contains("YOURTURN")){
                             myTurn = true;
                             if(withAI){
                                 sIn.resetTurn();
                                 //Platform.runLater(() -> setTeken((moveToDo / 8), (moveToDo % 8), ownToken));
                                 //System.out.println("DEZE MOVE VERNEUKT ALLES" + moveToDo);
-                                sendCommand("move " + moveToDo);
+                                generateBoard();
+                                if(finalMove!=moveToDo){
+                                    sendCommand("move " + moveToDo);
+                                }
+                                finalMove = moveToDo;
+                                //sendCommand("move " + moveToDo);
+
                                 //bkeAI.printBoard();
                             }
                             lastTurn=sIn.getTurn();
@@ -178,7 +202,7 @@ public class OTHGameController {
                         myTurn = true;
                     }
                     if(withAI){
-                        Thread.sleep(1250);
+                        Thread.sleep(300);
                     } else{
                         Thread.sleep(100);
                     }
@@ -203,14 +227,16 @@ public class OTHGameController {
     @FXML
     public void doQuit(){
         //resetBoard();
-        //othAI.reset();
+        if(withAI){
+            othAI.reset();
+        }
         Stage primaryStage = (Stage)oldWindow;
         primaryStage.show();
         sendCommand("forfeit");
         gridPane.getScene().getWindow().hide();
     }
 
-    private synchronized void setTeken(int row, int column, char token) {
+    private synchronized void setTeken(int column, int row, char token) {
         lastMsg = "";
         lastMove = "";
         //Label label = new Label();
@@ -246,13 +272,16 @@ public class OTHGameController {
 
         private void handleMouseClick(){
             if(!withAI) {
+                OthelloCoordinate coord = new OthelloCoordinate((row * 8 + column));
+                coord.setToken(ownToken);
                 if (myTurn) {
-                    board.addCoordinate(row,column,ownToken);
-                    generateBoard();
-                //Platform.runLater(() -> setTeken(row, column, ownToken));
-                sendCommand("move " + (row * 8 + column));
-                sIn.resetTurn();
-                myTurn = false;
+                    if(board.isValid(coord)){
+                        board.flipPaths((row * 8 + column),ownToken);
+                        generateBoard();
+                        sendCommand("move " + (row * 8 + column));
+                        sIn.resetTurn();
+                        myTurn = false;
+                    }
                 }
             }
         }
