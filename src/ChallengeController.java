@@ -1,18 +1,13 @@
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-
-import java.io.IOException;
 
 /**
  * TODO: Status labels updaten zonder dat de boel vastloopt.
@@ -21,6 +16,10 @@ import java.io.IOException;
 public class ChallengeController {
     @FXML private Button challengeButton;
     @FXML private Label challengeLabel;
+    @FXML private GridPane gridPane;
+    @FXML private Label ownNameLabel;
+    @FXML private Label oppNameLabel;
+    @FXML private Label turnLabel;
 
     private Model model;
     private ServerIn sIn;
@@ -33,6 +32,12 @@ public class ChallengeController {
     private String challengeNr;
 
     private String gameType;
+
+
+
+
+
+
 
 
     public ChallengeController(){}
@@ -54,18 +59,10 @@ public class ChallengeController {
 
 
     @FXML
-    public void doAccept() throws IOException{
+    public void doAccept(){
         model.sendToServer("challenge accept " + challengeNr);
-        Stage primaryStage = (Stage)oldWindow;
-        primaryStage.show();
         challengeLabel.getScene().getWindow().hide();
 
-
-
-//        FXMLLoader loader2 = new FXMLLoader();
-//        loader2.setLocation(ClassLoader.getSystemResource("connectForm.fxml"));
-//        Controller controller  = loader2.<Controller>getController();
-//        controller.drawBoard();
     }
 
 
