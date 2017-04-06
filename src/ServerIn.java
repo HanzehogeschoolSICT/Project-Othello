@@ -23,6 +23,7 @@ public class ServerIn implements Runnable {
     private String message = "";
     private String move = "";
     private boolean eog = false;
+    private boolean challenge = false;
     private String turn = "";
     private ObservableList<String> options = FXCollections.observableArrayList();
 
@@ -57,6 +58,11 @@ public class ServerIn implements Runnable {
             eog=true;
         }
         if (line.contains("PLAYERTOMOVE")) {
+            message = line;
+        }
+        if (line.contains("SVR GAME CHALLENGE")) {
+            System.out.print("");
+            challenge = true;
             message = line;
         }
 
@@ -121,6 +127,11 @@ public class ServerIn implements Runnable {
     public boolean getConnected() {
         System.out.print("");
         return Connected;
+    }
+
+    public boolean getChallenge(){
+        System.out.print("");
+        return challenge;
     }
 
     public String getMsg() {
