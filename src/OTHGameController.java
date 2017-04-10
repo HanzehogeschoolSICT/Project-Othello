@@ -76,7 +76,6 @@ public class OTHGameController {
 
     public void generateBoard(){
         for(int x = 0; x < 8; x++) {
-            String line = "";
             for(int y = 0; y < 8; y++) {
                 OthelloCoordinate coord;
                 if(withAI){
@@ -84,9 +83,7 @@ public class OTHGameController {
                 } else{
                     coord = board.getCoordinate(x, y);
                 }
-                if(coord == null) {
-                    line+="";
-                } else {
+                if(coord != null) {
                     setTeken(coord.getX(), coord.getY(),coord.getToken());
                 }
             }
@@ -94,18 +91,24 @@ public class OTHGameController {
         }
     }
 
+    public void initOpponentData(){
+        if (sIn.getMsg().contains("PLAYERTOMOVE")) {
+            opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
+            updateLabel(oppNameLabel, opponentName);
+            lastMsg = sIn.getMsg();
+        }
+    }
+
+
+
     public void controlGame() throws InterruptedException{
         new Thread(() -> {
             try{
                 while(check==1){
-                   // System.out.print("");
                     if(!sIn.getMsg().equals(lastMsg)) {
                         if (!sIn.getMsg().equals("")) {
-                            if (sIn.getMsg().contains("PLAYERTOMOVE")) {
-                                opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
-                                updateLabel(oppNameLabel, opponentName);
-                                lastMsg = sIn.getMsg();
-                            }
+                            initOpponentData();
+
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + ownName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
                                 //System.out.println(opponentName);
@@ -126,7 +129,7 @@ public class OTHGameController {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
                                 //System.out.println(opponentName);
                                 initToken('W', 'B');
-                                myTurn = true;
+                               // myTurn = true;
                                 if(withAI){
                                     othAI = new OthelloAI('W');
                                 } else {
@@ -155,7 +158,7 @@ public class OTHGameController {
                        // System.out.print("");
                         check=0;
                         generateBoard();
-                        Thread.currentThread().interrupt();
+                        //Thread.currentThread().interrupt();
                     }
                     if(!message.equals(lastMove) && check==2){
                         if(message.contains(opponentName)){

@@ -49,14 +49,16 @@ public class BKEGameController {
 
     public BKEGameController(){}
 
-    public void initData(Model conModel, ServerIn consIn, String name, Window window, boolean AI) throws InterruptedException{
+    public void initData(String name, Window window, boolean AI) throws InterruptedException{
         ownName = name;
-        model = conModel;
-        sIn = consIn;
-        controlGame();
         oldWindow = window;
         ownNameLabel.setText(ownName);
         withAI = AI;
+        controlGame();
+    }
+    public void initModel(Model conModel, ServerIn consIn){
+        model = conModel;
+        sIn = consIn;
     }
 
     @FXML
