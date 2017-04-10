@@ -150,7 +150,38 @@ public class Controller {
 
         }
         if(othRadio.isSelected()){
-
+            model.sendToServer("subscribe Reversi");
+            subscribeButton.setDisable(true);
+            connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
+            newChallenge = false;
+            new Thread(() -> {
+                boolean newScrene = true;
+                while (newScrene) {
+                    if (sIn.getConnected()) {
+                        Platform.runLater(() -> {
+                            try {
+                                boolean bot = false;
+                                if(botRadio.isSelected()){bot=true;}
+                                System.out.print("");
+                                FXMLLoader loader = new FXMLLoader(getClass().getResource("OTHgameForm.fxml"));
+                                Stage gamestage = new Stage();
+                                gamestage.setScene(new Scene(loader.load()));
+                                OTHGameController gamecontroller = loader.<OTHGameController>getController();
+                                gamecontroller.initModel(model, sIn);
+                                gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+                                loginButton.getScene().getWindow().setOnHidden(e -> {
+                                    subscribeButton.setDisable(false);
+                                    connectionLabel.setText("Match bezig of klaar!");
+                                });
+                                gamestage.show();
+                                loginButton.getScene().getWindow().hide();
+                            } catch(Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        });newScrene = false;
+                    }
+                }
+            }).start();
         }
     }
 
