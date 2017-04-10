@@ -48,13 +48,12 @@ public class Controller {
                 if (sIn.getChallenge()){
                     Platform.runLater(() -> {
                         try {
-                            System.out.print("");
                             opponent = sIn.getMsg().substring(sIn.getMsg().indexOf("CHALLENGER:")+ 13, sIn.getMsg().indexOf("\", CHALLENGENUMBER:"));
                             challengeNr = sIn.getMsg().substring(sIn.getMsg().indexOf("CHALLENGENUMBER:")+18, sIn.getMsg().indexOf("\", GAMETYPE:"));
                             gameType = sIn.getMsg().substring(sIn.getMsg().indexOf("GAMETYPE:")+11, sIn.getMsg().length()-2);
-                            System.out.println(opponent);
-                            System.out.println(challengeNr);
-                            System.out.println(gameType);
+                            //System.out.println(opponent);
+                            //System.out.println(challengeNr);
+                            //System.out.println(gameType);
                             FXMLLoader loader1 = new FXMLLoader();
                             loader1.setLocation(ClassLoader.getSystemResource("challengeForm.fxml"));
                             Stage challengeStage = new Stage();
@@ -78,7 +77,7 @@ public class Controller {
     }
     @FXML void doChallenge(){
         //TODO Niet hardcoden
-        System.out.println("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
+        //System.out.println("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
         model.sendToServer("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
     }
 
@@ -96,7 +95,6 @@ public class Controller {
                                     try {
                                         boolean bot = false;
                                         if(botRadio.isSelected()){bot=true;}
-                                        System.out.print("");
                                         FXMLLoader loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
                                         Stage gamestage = new Stage();
                                         gamestage.setScene(new Scene(loader.load()));
@@ -129,7 +127,6 @@ public class Controller {
                             try {
                                 boolean bot = false;
                                 if(botRadio.isSelected()){bot=true;}
-                                System.out.print("");
                                 FXMLLoader loader = new FXMLLoader(getClass().getResource("OTHgameForm.fxml"));
                                 Stage gamestage = new Stage();
                                 gamestage.setScene(new Scene(loader.load()));

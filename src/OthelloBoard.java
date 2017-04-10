@@ -64,7 +64,7 @@ public class OthelloBoard {
         		}
         	}
     		
-    		System.out.println(line);
+    		//System.out.println(line);
     	}
 	}
 
@@ -103,7 +103,7 @@ public class OthelloBoard {
 		}
 	}
 
-	public boolean isValid(OthelloCoordinate coord) {
+	public synchronized boolean isValid(OthelloCoordinate coord) {
 		if(!isInBoard(coord)){
 			return false;
 		}

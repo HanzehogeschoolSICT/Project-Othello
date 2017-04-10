@@ -17,14 +17,14 @@ import java.util.regex.Pattern;
  */
 public class ServerIn implements Runnable {
 
-    BufferedReader inReader;
-    boolean stop = false;
-    private boolean Connected = false;
-    private String message = "";
-    private String move = "";
-    private boolean eog = false;
-    private boolean challenge = false;
-    private String turn = "";
+    private BufferedReader inReader;
+    private boolean stop = false;
+    private volatile boolean Connected = false;
+    private volatile String message = "";
+    private volatile String move = "";
+    private volatile boolean eog = false;
+    private volatile boolean challenge = false;
+    private volatile String turn = "";
     private ObservableList<String> options = FXCollections.observableArrayList();
 
     ServerIn(InputStream in) throws IOException {
@@ -33,12 +33,12 @@ public class ServerIn implements Runnable {
 
     private void parse(String line) throws IOException {
         if (line.equals("OK")) {
-            System.out.println("Commando ontvangen/succesvol");
+            //System.out.println("Commando ontvangen/succesvol");
         }
 
         // SVR commando met value
         if (line.matches("^SVR.*")) {
-            System.out.println("Value ontvangen");
+            //System.out.println("Value ontvangen");
             SVRparser(line);
         }
         if (line.contains("SVR GAME MATCH")) {
@@ -48,7 +48,6 @@ public class ServerIn implements Runnable {
             message = line;
         }
         if (line.contains("SVR GAME MOVE")) {
-            System.out.print("");
             move = line;
         }
         if (line.contains("YOURTURN")) {
@@ -61,7 +60,6 @@ public class ServerIn implements Runnable {
             message = line;
         }
         if (line.contains("SVR GAME CHALLENGE")) {
-            System.out.print("");
             challenge = true;
             message = line;
         }
@@ -90,7 +88,6 @@ public class ServerIn implements Runnable {
     private void createPlayerList(String line) {
         Pattern p = Pattern.compile("\"(.*?)\"");
         Matcher matcher = p.matcher(line);
-        ArrayList<String> acc = new ArrayList<>();
         while(matcher.find()){
             String s = matcher.group();
             options.add(s);
@@ -125,16 +122,14 @@ public class ServerIn implements Runnable {
     }
 
     public boolean getConnected() {
-        System.out.print("");
         return Connected;
     }
 
     public boolean getChallenge(){
-        System.out.print("");
         return challenge;
     }
 
-    public String getMsg() {
+    public  String getMsg() {
         return message;
     }
 
@@ -142,11 +137,10 @@ public class ServerIn implements Runnable {
         return eog;
     }
     public String getMove() {
-        System.out.print("");
         return move;
     }
 
-    public String getTurn(){
+    public  String getTurn(){
         return turn;
     }
     public ObservableList<String> returnOptions(){

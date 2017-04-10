@@ -45,7 +45,7 @@ public class OTHGameController {
     private int moveToDo;
     int check = 1;
     OthelloAI othAI;
-    OthelloBoard board;
+    volatile OthelloBoard board;
 
     public OTHGameController(){}
 
@@ -84,7 +84,6 @@ public class OTHGameController {
                 } else{
                     coord = board.getCoordinate(x, y);
                 }
-                //OthelloCoordinate coord = board.getCoordinate(x, y);
                 if(coord == null) {
                     line+="";
                 } else {
@@ -99,7 +98,7 @@ public class OTHGameController {
         new Thread(() -> {
             try{
                 while(check==1){
-                    System.out.print("");
+                   // System.out.print("");
                     if(!sIn.getMsg().equals(lastMsg)) {
                         if (!sIn.getMsg().equals("")) {
                             if (sIn.getMsg().contains("PLAYERTOMOVE")) {
@@ -109,7 +108,7 @@ public class OTHGameController {
                             }
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + ownName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
-                                System.out.println(opponentName);
+                                //System.out.println(opponentName);
                                 initToken('B', 'W');
                                 if(withAI){
                                     othAI = new OthelloAI('B');
@@ -118,14 +117,14 @@ public class OTHGameController {
                                     board = new OthelloBoard('B');
                                 }
                                 generateBoard();
-                                updateLabel(ownNameLabel, "Ik ben X");
-                                updateLabel(oppNameLabel, oppNameLabel.getText() + " is  O");
+                                updateLabel(ownNameLabel, "Ik ben Zwart");
+                                updateLabel(oppNameLabel, oppNameLabel.getText() + " is  Wit");
                                 check = 2;
                                 lastMsg = sIn.getMsg();
                             }
                             if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + opponentName + '"')) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
-                                System.out.println(opponentName);
+                                //System.out.println(opponentName);
                                 initToken('W', 'B');
                                 myTurn = true;
                                 if(withAI){
@@ -134,8 +133,8 @@ public class OTHGameController {
                                     board = new OthelloBoard('W');
                                 }
                                 generateBoard();
-                                updateLabel(ownNameLabel, "Ik ben O");
-                                updateLabel(oppNameLabel, opponentName+" is X");
+                                updateLabel(ownNameLabel, "Ik ben Wit");
+                                updateLabel(oppNameLabel, opponentName+" is Zwart");
                                 check = 2;
                                 lastMsg = sIn.getMsg();
                             }
@@ -143,7 +142,7 @@ public class OTHGameController {
                         }
                     }
                 }
-                System.out.print("");
+                //System.out.print("");
                 while(check==2) {
                     String message = sIn.getMove();
                     if(sIn.eogMsg()){
@@ -153,7 +152,7 @@ public class OTHGameController {
                             othAI.board.flipPaths(move, oppToken);
                        }
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
-                        System.out.print("");
+                       // System.out.print("");
                         check=0;
                         generateBoard();
                         Thread.currentThread().interrupt();
@@ -166,14 +165,16 @@ public class OTHGameController {
                             //Platform.runLater(() -> setTeken((move / 8), (move % 8), oppToken));
                             if(withAI) {
                                 generateBoard();
-                                System.out.print("DIT IS DE MOVE DIE ALLES VERKLOOT: " + move);
+                               // System.out.print("DIT IS DE MOVE DIE ALLES VERKLOOT: " + move);
                                 //othAI.board.flipPaths(move, oppToken);
                                 moveToDo = othAI.getNewMove(move);
                                 generateBoard();
                                 //bkeAI.printBoard();
                             } else{
+                                generateBoard();
                                 board.flipPaths(move, oppToken);
                                 generateBoard();
+
                             }
                             lastMove=message;
                         }}
@@ -202,7 +203,7 @@ public class OTHGameController {
                         myTurn = true;
                     }
                     if(withAI){
-                        Thread.sleep(300);
+                        Thread.sleep(5);
                     } else{
                         Thread.sleep(100);
                     }
@@ -210,9 +211,10 @@ public class OTHGameController {
                 //Thread.sleep(100);
             } catch (Exception ex){
                 ex.printStackTrace();
+           // }
             }
-
         }).start();
+
     }
 
     @FXML
@@ -236,7 +238,7 @@ public class OTHGameController {
         gridPane.getScene().getWindow().hide();
     }
 
-    private synchronized void setTeken(int column, int row, char token) {
+    private void setTeken(int column, int row, char token) {
         lastMsg = "";
         lastMove = "";
         //Label label = new Label();
@@ -253,7 +255,7 @@ public class OTHGameController {
         //cell[row][column].getChildren().add(label);
         rowSelected = row;
         columnSelected = column;
-        System.out.print("");
+        //System.out.print("");
 
     }
 

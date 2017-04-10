@@ -24,12 +24,12 @@ public class Model{
     }
 
 
-    public void ServerOut(String name, String hostname, int port) throws IOException {
+    public synchronized void ServerOut(String name, String hostname, int port) throws IOException {
 
         socket = new Socket(hostname, port);
 
         if (socket.isConnected()) {
-            System.out.println("Connected on: " + hostname + ":" + port + "\n ");
+            //System.out.println("Connected on: " + hostname + ":" + port + "\n ");
         }
 
         // Create a printwriter, autoflush is enabled
@@ -57,7 +57,7 @@ public class Model{
 
         // Stop listening thread
         if (input.equals("quit")) {
-            System.out.println("Disconnecting server");
+            //System.out.println("Disconnecting server");
             sIn.disconnect();
             out.println("quit");
             return;
@@ -69,10 +69,10 @@ public class Model{
     /**
      * Execute a command from System.in,
      */
-    public void sendToServer(String input){
+    public synchronized void sendToServer(String input){
         // Stop listening thread
         if (input.equals("quit")) {
-            System.out.println("Disconnecting server");
+            //System.out.println("Disconnecting server");
             sIn.disconnect();
             out.println("quit");
             return;
