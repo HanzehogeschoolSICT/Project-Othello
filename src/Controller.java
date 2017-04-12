@@ -178,7 +178,7 @@ public class Controller {
         }
         subscribeButton.setDisable(true);
         connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
-//            drawBoard();
+            drawBoard();
         subsribe = false;
     }
 

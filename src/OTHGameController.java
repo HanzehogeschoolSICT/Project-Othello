@@ -158,6 +158,7 @@ public class OTHGameController {
                        // System.out.print("");
                         check=0;
                         generateBoard();
+                        resetBoard();
                         //Thread.currentThread().interrupt();
                     }
                     if(!message.equals(lastMove) && check==2){
@@ -189,7 +190,7 @@ public class OTHGameController {
                                 //Platform.runLater(() -> setTeken((moveToDo / 8), (moveToDo % 8), ownToken));
                                 //System.out.println("DEZE MOVE VERNEUKT ALLES" + moveToDo);
                                 generateBoard();
-                                if(finalMove!=moveToDo){
+                                if(finalMove!=moveToDo && moveToDo!=-1){
                                     sendCommand("move " + moveToDo);
                                 }
                                 finalMove = moveToDo;
@@ -206,7 +207,7 @@ public class OTHGameController {
                         myTurn = true;
                     }
                     if(withAI){
-                        Thread.sleep(5);
+                        Thread.sleep(300);
                     } else{
                         Thread.sleep(100);
                     }
@@ -229,15 +230,39 @@ public class OTHGameController {
         }
     }
 
+    public void resetBoard() {
+        Platform.runLater(() -> {
+            if (withAI) {
+                othAI.reset();
+                othAI.board.reset();
+            }
+            sIn.Reset();
+            oppToken = ' ';
+            ownToken = ' ';
+            opponentName = "";
+            check = 1;
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    cell[i][j].getChildren().clear();
+                }
+            }
+            initialize();
+        });
+    }
+
     @FXML
     public void doQuit(){
-        //resetBoard();
+        sendCommand("forfeit");
+        resetBoard();
         if(withAI){
             othAI.reset();
+            othAI.board.reset();
         }
+        sIn.Reset();
+        model.sendToServer("subscribe Reversi");
         Stage primaryStage = (Stage)oldWindow;
         primaryStage.show();
-        sendCommand("forfeit");
+        check=1;
         gridPane.getScene().getWindow().hide();
     }
 
@@ -276,19 +301,19 @@ public class OTHGameController {
         }
 
         private void handleMouseClick(){
-            if(!withAI) {
+            //if(!withAI) {
                 OthelloCoordinate coord = new OthelloCoordinate((row * 8 + column));
                 coord.setToken(ownToken);
-                if (myTurn) {
-                    if(board.isValid(coord)){
-                        board.flipPaths((row * 8 + column),ownToken);
+                //if (myTurn) {
+                    if(othAI.board.isValid(coord)){
+                        othAI.board.flipPaths((row * 8 + column),ownToken);
                         generateBoard();
                         sendCommand("move " + (row * 8 + column));
                         sIn.resetTurn();
                         myTurn = false;
                     }
-                }
-            }
+                //}
+            //}
         }
 
 

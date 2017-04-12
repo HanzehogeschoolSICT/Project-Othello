@@ -74,7 +74,8 @@ public class ServerIn implements Runnable {
     private void SVRparser(String line) throws IOException {
         // Gamelist return
         if (line.matches("^SVR GAMELIST.*")) {
-            //System.out.println(parseArray(line));
+            //
+            // System.out.println(parseArray(line));
             System.out.println("playerlist done");
         }
 
