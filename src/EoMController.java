@@ -27,10 +27,9 @@ public class EoMController {
     public EoMController() {
     }
 
-    public void initData(Model conModel, ServerIn consIn, Window window, String gameresult) throws InterruptedException {
-        model = conModel;
-        sIn = consIn;
-        oldWindow = window;
+    public void initData(String gameresult) throws InterruptedException {
+
+
         gamestatus = gameresult;
         eomLabel.setText(gamestatus);
 

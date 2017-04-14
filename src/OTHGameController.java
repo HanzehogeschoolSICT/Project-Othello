@@ -22,6 +22,7 @@ public class OTHGameController {
     @FXML private Label ownNameLabel;
     @FXML private Label oppNameLabel;
     @FXML private Label turnLabel;
+    @FXML private Button forfeitButton;
 
     private Model model;
     private ServerIn sIn;
@@ -48,6 +49,8 @@ public class OTHGameController {
     int check = 1;
     OthelloAI othAI;
     OthelloBoard board;
+
+    private String gameResult;
 
     private String gameStatus;
 
@@ -158,12 +161,10 @@ public class OTHGameController {
                        }
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
                         System.out.println(sIn.getMsg());
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
-                        Stage gamestage = new Stage();
-                        gamestage.setScene(new Scene(loader.load()));
-                        BKEGameController gamecontroller = loader.<BKEGameController>getController();
-                        gamecontroller.getEoMform();
 
+                        EoG.getEoMform(getGameResult());
+                        System.out.println("Hij hoort hier de end of game messsage te printen!!!...............");
+                        Platform.runLater(() -> quit());
 
                         System.out.print("");
                         check=0;
@@ -237,16 +238,58 @@ public class OTHGameController {
         }
     }
 
+    public void resetBoard(){
+        for (int i=0; i<8; i++){
+            for(int j = 0; j<8; j++){
+                cell[i][j].getChildren().clear();
+            }
+        }
+        sIn.Reset();
+        check = 1;
+        opponentName = "";
+    }
+
     @FXML
     public void doQuit(){
-        //resetBoard();
+        quit();
+    }
+
+    public void quit(){
+        resetBoard();
         if(withAI){
             othAI.reset();
         }
         Stage primaryStage = (Stage)oldWindow;
         primaryStage.show();
-        sendCommand("forfeit");
+//        sendCommand("forfeit");
         gridPane.getScene().getWindow().hide();
+        Controller.newGame = true;
+        Controller.shouldStop = false;
+        Controller.challengeOpen = true;
+    }
+
+    @FXML
+    public void doForfeit() {
+        sendCommand("forfeit");
+        check = 0;
+    }
+
+    public String getGameResult(){
+        System.out.println(sIn.getMsg());
+
+        if (sIn.getMsg().contains("SVR GAME WIN")){
+            gameResult = "Gefeliciteerd," + " je hebt gewonnen";
+            System.out.println(gameResult);
+        }
+        else if(sIn.getMsg().contains("SVR GAME LOSS")){
+            gameResult = "Je zuigt";
+            System.out.println(gameResult);
+        }
+        else if (sIn.getMsg().contains("SVR GAME DRAW")){
+            gameResult = "gelijk spelen is erger dan verliezen";
+            System.out.println(gameResult);
+        }
+        return gameResult;
     }
 
     private synchronized void setTeken(int column, int row, char token) {
@@ -269,6 +312,8 @@ public class OTHGameController {
         System.out.print("");
 
     }
+
+
 
     public class Cell extends GridPane {
         private int row;

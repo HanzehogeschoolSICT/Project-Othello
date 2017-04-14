@@ -19,6 +19,7 @@ public class Controller implements Runnable{
     @FXML private ComboBox playerBox;
     @FXML private Button refreshButton;
     @FXML private RadioButton botRadio;
+    @FXML private Button logoutButton;
 
     public static Thread t;
     public static volatile boolean shouldStop = false;
@@ -44,7 +45,6 @@ public class Controller implements Runnable{
     }
 
     public void start(){
-        shouldStop = true;
         t.start();
     }
 
@@ -56,12 +56,18 @@ public class Controller implements Runnable{
     public void run() {
         while (!shouldStop) {
             try{
-            t.sleep(500);
+            t.sleep(2000);
             if (newGame == true) {
                 System.out.println("thread is starting.....");
                 System.out.println("checking for new Game");
-                drawBoard();
-                newGame = false;
+                if(sIn.getMsg().contains("Tic-tac-")){
+                    drawBoard();
+                    newGame = false;
+                }
+                if(sIn.getMsg().contains("Reversi")){
+                    drawOthello();
+                    newGame = false;
+                }
             }
             else if (challengeOpen == true) {
                 challengeOpen = false;
@@ -91,9 +97,11 @@ public class Controller implements Runnable{
         new Thread(sIn).start();
         model.sendToServer("get playerlist");
         playerBox.setItems(sIn.returnOptions());
+
         newGame = true;
         challengeOpen = true;
-        t.start();
+        shouldStop = false;
+        start();
 
 //        getChallenge();
 //        drawBoard();
@@ -171,6 +179,37 @@ public class Controller implements Runnable{
 
     }
 
+    public void drawOthello(){
+        new Thread(() -> {
+            boolean newScrene = true;
+            while (newScrene) {
+                if (sIn.getConnected()) {
+                    Platform.runLater(() -> {
+                        try {
+                            boolean bot = false;
+                            if(botRadio.isSelected()){bot=true;}
+                            System.out.print("");
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource("OTHgameForm.fxml"));
+                            Stage gamestage = new Stage();
+                            gamestage.setScene(new Scene(loader.load()));
+                            OTHGameController gamecontroller = loader.<OTHGameController>getController();
+                            gamecontroller.initModel(model, sIn);
+                            gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+                            loginButton.getScene().getWindow().setOnHidden(e -> {
+                                subscribeButton.setDisable(false);
+                                connectionLabel.setText("Match bezig of klaar!");
+                            });
+                            gamestage.show();
+                            loginButton.getScene().getWindow().hide();
+                        } catch(Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    });newScrene = false;
+                }
+            }
+        }).start();
+    }
+
     @FXML public void doRefreshPLR(){
         playerBox.getItems().clear();
         model.sendToServer("get playerlist");
@@ -181,8 +220,14 @@ public class Controller implements Runnable{
     }
     @FXML void doChallenge(){
         //TODO Niet hardcoden
-        System.out.println("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
-        model.sendToServer("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
+        if(tttRadio.isSelected()) {
+            System.out.println("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
+            model.sendToServer("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
+        }
+        else if(othRadio.isSelected()){
+            System.out.println("challenge " + playerBox.getValue() + " \"Reversi\"");
+            model.sendToServer("challenge " + playerBox.getValue() + " \"Reversi\"");
+        }
 //        drawBoard();
     }
 
@@ -202,36 +247,16 @@ public class Controller implements Runnable{
             subscribeButton.setDisable(true);
             connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
             newChallenge = false;
-            new Thread(() -> {
-                boolean newScrene = true;
-                while (newScrene) {
-                    if (sIn.getConnected()) {
-                        Platform.runLater(() -> {
-                            try {
-                                boolean bot = false;
-                                if(botRadio.isSelected()){bot=true;}
-                                System.out.print("");
-                                FXMLLoader loader = new FXMLLoader(getClass().getResource("OTHgameForm.fxml"));
-                                Stage gamestage = new Stage();
-                                gamestage.setScene(new Scene(loader.load()));
-                                OTHGameController gamecontroller = loader.<OTHGameController>getController();
-                                gamecontroller.initModel(model, sIn);
-                                gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow(), bot);
-                                loginButton.getScene().getWindow().setOnHidden(e -> {
-                                    subscribeButton.setDisable(false);
-                                    connectionLabel.setText("Match bezig of klaar!");
-                                });
-                                gamestage.show();
-                                loginButton.getScene().getWindow().hide();
-                            } catch(Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        });newScrene = false;
-                    }
-                }
-            }).start();
+
         }
     }
+    @FXML void doLogout(){
+        loginButton.setDisable(false);
+        model.sendToServer("bye");
+//        shouldStop = true;
+
+    }
+
 
 
 }
