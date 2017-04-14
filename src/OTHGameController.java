@@ -1,7 +1,9 @@
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -46,6 +48,8 @@ public class OTHGameController {
     int check = 1;
     OthelloAI othAI;
     OthelloBoard board;
+
+    private String gameStatus;
 
     public OTHGameController(){}
 
@@ -153,9 +157,18 @@ public class OTHGameController {
                             othAI.board.flipPaths(move, oppToken);
                        }
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
+                        System.out.println(sIn.getMsg());
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
+                        Stage gamestage = new Stage();
+                        gamestage.setScene(new Scene(loader.load()));
+                        BKEGameController gamecontroller = loader.<BKEGameController>getController();
+                        gamecontroller.getEoMform();
+
+
                         System.out.print("");
                         check=0;
                         generateBoard();
+
                         Thread.currentThread().interrupt();
                     }
                     if(!message.equals(lastMove) && check==2){

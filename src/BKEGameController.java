@@ -3,12 +3,15 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+
+import java.io.IOException;
 
 /**
  * TODO: Status labels updaten zonder dat de boel vastloopt.
@@ -21,6 +24,7 @@ public class BKEGameController {
     @FXML private Label ownNameLabel;
     @FXML private Label oppNameLabel;
     @FXML private Label turnLabel;
+    @FXML private Button forfeitButton;
 
     private Model model;
     private ServerIn sIn;
@@ -43,6 +47,12 @@ public class BKEGameController {
     private boolean withAI;
     private int moveToDo;
     int check = 1;
+
+    private String gameStatus;
+
+    private String gameResult;
+
+
 
     TicTacToeAI bkeAI = new TicTacToeAI();
 
@@ -145,6 +155,8 @@ public class BKEGameController {
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
                         System.out.print("");
                         check=0;
+                        Platform.runLater(() -> quit());
+                        getEoMform();
                         Thread.currentThread().interrupt();
                     }
                     if(!lastTurn.equals(sIn.getTurn())){
@@ -185,29 +197,95 @@ public class BKEGameController {
 
     @FXML
     public void doQuit(){
+//        System.out.println("Hier doet die wat");
+//        resetBoard();
+//        bkeAI.reset();
+//        Stage primaryStage = (Stage)oldWindow;
+//        primaryStage.show();
+////        model.sendToServer("forfeit");
+//        gridPane.
+//                getScene().getWindow().hide();
+//        Controller.newGame = true;
+//        Controller.shouldStop = false;
+//        Controller.challengeOpen = true;
+        quit();
+
+
+    }
+
+    public void quit(){
+        System.out.println("Hier doet die wat");
         resetBoard();
         bkeAI.reset();
         Stage primaryStage = (Stage)oldWindow;
         primaryStage.show();
-        model.sendToServer("forfeit");
-        gridPane.getScene().getWindow().hide();
+//        model.sendToServer("forfeit");
+        gridPane.
+                getScene().getWindow().hide();
+        Controller.newGame = true;
+        Controller.shouldStop = false;
+        Controller.challengeOpen = true;
+
+
+
     }
+
+    @FXML
+    public void doForfeit(){
+        model.sendToServer("forfeit");
+        check = 0;
+    }
+
+    public void getEoMform(){
+
+        System.out.println(sIn.getMsg());
+
+        if (sIn.getMsg().contains("SVR GAME WIN")){
+            gameResult = "Gefeliciteerd," +
+                    " je hebt gewonnen";
+            System.out.println(gameResult);
+        }
+        else if(sIn.getMsg().contains("SVR GAME LOSS")){
+            gameResult = "Je zuigt";
+            System.out.println(gameResult);
+        }
+        else if (sIn.getMsg().contains("SVR GAME DRAW")){
+            gameResult = "gelijk spelen is erger dan verliezen";
+            System.out.println(gameResult);
+        }
+        Platform.runLater(() -> {
+            try{
+                FXMLLoader loader1 = new FXMLLoader();
+                loader1.setLocation(ClassLoader.getSystemResource("EoMForm.fxml"));
+                Stage EoMstage = new Stage();
+                EoMstage.setScene(new Scene(loader1.load()));
+                EoMController EoMcontroller = loader1.<EoMController>getController();
+                EoMcontroller.initData(model,sIn, oldWindow, gameResult);
+                EoMstage.show();
+
+            }catch(Exception ex) {
+                ex.printStackTrace();
+            }
+        });}
 
     private synchronized void setTeken(int row, int column, String token) {
-            lastMsg = "";
-            lastMove = "";
-            Label label = new Label();
-            //if(whoseTurn==0){label.setText("\n      X");}
-            // else if(whoseTurn==1){label.setText("\n      O");}
-            label.setText("\n      "+token);
-            label.setFont(new Font("Arial", 30));
-            label.setAlignment(Pos.CENTER);
-            cell[row][column].getChildren().add(label);
-            rowSelected = row;
-            columnSelected = column;
-            System.out.print("");
+        lastMsg = "";
+        lastMove = "";
+        Label label = new Label();
+        //if(whoseTurn==0){label.setText("\n      X");}
+        // else if(whoseTurn==1){label.setText("\n      O");}
+        label.setText("\n      " + token);
+        label.setFont(new Font("Arial", 30));
+        label.setAlignment(Pos.CENTER);
+        cell[row][column].getChildren().add(label);
+        rowSelected = row;
+        columnSelected = column;
+        System.out.print("");
+
+
 
     }
+
 
 
     public class Cell extends GridPane {
@@ -234,6 +312,8 @@ public class BKEGameController {
                 }
             }
         }
+
+
 
 
     }

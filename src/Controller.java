@@ -7,7 +7,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class Controller {
+public class Controller implements Runnable{
     @FXML private Button loginButton;
     @FXML private TextField nameInputField;
     @FXML private TextField ipInputField;
@@ -20,11 +20,15 @@ public class Controller {
     @FXML private Button refreshButton;
     @FXML private RadioButton botRadio;
 
+    public static Thread t;
+    public static volatile boolean shouldStop = false;
+
     private static Controller instance = null;
     private Model model = new Model();
     private ServerIn sIn;
 
     private Boolean newChallenge;
+    public static Boolean challengeOpen;
 
     private String opponent;
     private String challengeNr;
@@ -33,7 +37,44 @@ public class Controller {
     private Boolean subsribe = false;
     private Boolean newScrene = false;
 
-    public Controller(){}
+    public static Boolean newGame = false;
+
+    public Controller(){
+        t = new Thread(this, "newGame Thread");
+    }
+
+    public void start(){
+        shouldStop = true;
+        t.start();
+    }
+
+    public void stop(){
+        System.out.println("thread is closing.....");
+        shouldStop = true;
+    }
+
+    public void run() {
+        while (!shouldStop) {
+            try{
+            t.sleep(500);
+            if (newGame == true) {
+                System.out.println("thread is starting.....");
+                System.out.println("checking for new Game");
+                drawBoard();
+                newGame = false;
+            }
+            else if (challengeOpen == true) {
+                challengeOpen = false;
+                System.out.println("checking for challenges.....");
+                getChallenge();
+//
+            }}catch (InterruptedException ex){
+                t.currentThread().interrupt();
+            }
+
+
+        }
+    }
 
 
 
@@ -50,8 +91,12 @@ public class Controller {
         new Thread(sIn).start();
         model.sendToServer("get playerlist");
         playerBox.setItems(sIn.returnOptions());
-        getChallenge();
-        drawBoard();
+        newGame = true;
+        challengeOpen = true;
+        t.start();
+
+//        getChallenge();
+//        drawBoard();
     }
 
     public void getChallenge(){
@@ -60,6 +105,8 @@ public class Controller {
             newChallenge = true;
             while (newChallenge){
                 if (sIn.getChallenge()){
+
+                    newChallenge = false;
                     Platform.runLater(() -> {
                         try {
                             System.out.print("");
@@ -92,7 +139,7 @@ public class Controller {
 
     public void drawBoard(){
         newScrene = false;
-        newChallenge = false;
+//        t.stop();
         new Thread(() -> {
             newScrene = true;
             while (newScrene) {
@@ -128,8 +175,8 @@ public class Controller {
         playerBox.getItems().clear();
         model.sendToServer("get playerlist");
         playerBox.setItems(sIn.returnOptions());
-        getChallenge();
-        drawBoard();
+//        getChallenge();
+//        drawBoard();
 
     }
     @FXML void doChallenge(){
@@ -140,6 +187,7 @@ public class Controller {
     }
 
     @FXML void doSubscribe() {
+        newChallenge = false;
         subsribe = true;
         if(tttRadio.isSelected()){
             model.sendToServer("subscribe Tic-tac-toe");

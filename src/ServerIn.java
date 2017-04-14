@@ -56,6 +56,8 @@ public class ServerIn implements Runnable {
         }
         if(line.contains("SVR GAME LOSS") || line.contains("SVR GAME DRAW") || line.contains("SVR GAME WIN")){
             eog=true;
+            message = line;
+
         }
         if (line.contains("PLAYERTOMOVE")) {
             message = line;
@@ -163,5 +165,6 @@ public class ServerIn implements Runnable {
         move = "";
         turn = "";
         Connected = false;
+        challenge = false;
     }
 }
