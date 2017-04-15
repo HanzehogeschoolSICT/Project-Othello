@@ -7,7 +7,7 @@ public class OthelloAI extends AIClass {
     ArrayList<Integer> possibleMoves;
     ArrayList<Integer> possibleOpponentMoves;
     int move;
-    volatile OthelloBoard board;
+    OthelloBoard board;
     char token;
     char oppositeToken;
 
