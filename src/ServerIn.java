@@ -29,6 +29,8 @@ public class ServerIn implements Runnable {
     private volatile String turn = "";
     private ObservableList<String> options = FXCollections.observableArrayList();
 
+    public static boolean boolmyTurn = false;
+
     ServerIn(InputStream in) throws IOException {
         inReader = new BufferedReader(new InputStreamReader(in));
     }
@@ -54,6 +56,7 @@ public class ServerIn implements Runnable {
         }
         if (line.contains("YOURTURN")) {
             turn = line;
+            boolmyTurn = true;
         }
         if (line.contains("PLAYERTOMOVE")) {
             message = line;
@@ -159,6 +162,10 @@ public class ServerIn implements Runnable {
     public  String getTurn(){
         return turn;
     }
+
+    public boolean getMyTurn(){
+        return boolmyTurn;
+    }
     public ObservableList<String> returnOptions(){
         return options;
     }
@@ -173,5 +180,6 @@ public class ServerIn implements Runnable {
         move = "";
         turn = "";
         Connected = false;
+        boolmyTurn = false;
     }
 }

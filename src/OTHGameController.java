@@ -1,3 +1,4 @@
+import com.sun.xml.internal.bind.v2.TODO;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -150,16 +151,22 @@ public class OTHGameController {
 	    String message = sIn.getMove();
 		if (!message.equals(lastMove) ) {
 			if (message.contains(opponentName)) {
-				processOpponentMove(message);
+			    processOpponentMove(message);
 				generateBoard();
 			}
 		}
-		if (!lastTurn.equals(sIn.getTurn())) {
-			if (sIn.getTurn().contains("YOURTURN")) {
-				processOwnMove(message);
+
+        /*
+        TODO: het bord update niet goed als bij bot bij Player vs Bot
+          */
+
+            if (sIn.getTurn().contains("YOURTURN")) {
+                System.out.println("hier gaat die voor de 2e keer in");
+//                myTurn = true;
+			    processOwnMove(message);
 				generateBoard();
 			}
-		}
+
 		if (sIn.endOfGame()) {
             System.out.println(getGameResult());
             EoG.getEoMform(getGameResult());
@@ -188,8 +195,9 @@ public class OTHGameController {
 	private void processOwnMove(String message) {
 		updateLabel(statusLabel, "Jij bent aan de beurt!");
 		myTurn = true;
+		sIn.resetTurn();
 		if (withAI) {
-			sIn.resetTurn();
+//			sIn.resetTurn();
 			if (finalMove != moveToDo && moveToDo != -1) {
 				board.flipPaths(moveToDo, ownToken);
 				sendCommand("move " + moveToDo);
@@ -312,7 +320,8 @@ public class OTHGameController {
 				OthelloCoordinate coord = new OthelloCoordinate((row * 8 + column));
 				coord.setToken(ownToken);
 				if (myTurn) {
-					if (board.isValid(coord, ownToken)) {
+                    System.out.println("Ik zou moeten kunnen klikken");
+                    if (board.isValid(coord, ownToken)) {
 						board.flipPaths((row * 8 + column), ownToken);
 						generateBoard();
 						sendCommand("move " + (row * 8 + column));
