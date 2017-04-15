@@ -5,6 +5,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -227,7 +229,7 @@ public class OTHGameController {
 			check = 0;
 			for (int i = 0; i < 8; i++) {
 				for (int j = 0; j < 8; j++) {
-					cell[i][j].getChildren().clear();
+					//cell[i][j].getChildren().clear();
 				}
 			}
 		});
@@ -251,11 +253,13 @@ public class OTHGameController {
 	private void setTeken(int row, int column, char token) {
 		lastMsg = "";
 		lastMove = "";
-		if (token == 'B') {
-			Platform.runLater(() -> cell[row][column].setStyle("-fx-background-color: black"));
-		} else if (token == 'W') {
-			Platform.runLater(() -> cell[row][column].setStyle("-fx-background-color: white"));
-		}
+			Platform.runLater(() -> {
+				Circle steentje = new Circle(1000, 1000, 22.5);
+				steentje.setStroke(Color.GREY);
+				steentje.setFill(token == 'W' ? Color.WHITE : Color.BLACK);
+				steentje.setStrokeWidth(3);
+				cell[row][column].getChildren().add(steentje);
+			});
 		rowSelected = row;
 		columnSelected = column;
 	}

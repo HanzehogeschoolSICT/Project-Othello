@@ -151,7 +151,7 @@ public class BKEGameController {
                     if(!message.contains(opponentName)){
                         Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!! deze veranderd"));
                     }
-                    if(sIn.eogMsg()){
+                    if(sIn.endOfGame()){
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
                         System.out.print("");
                         check=0;
