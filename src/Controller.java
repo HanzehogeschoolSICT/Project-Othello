@@ -25,7 +25,7 @@ public class Controller implements Runnable{
     public static volatile boolean shouldStop = false;
 
     private static Controller instance = null;
-    private Model model = new Model();
+    private ServerOut serverOut = new ServerOut();
     private ServerIn sIn;
 
     private Boolean newChallenge;
@@ -90,12 +90,12 @@ public class Controller implements Runnable{
     }
 
     @FXML public void doLogin() throws IOException {
-        model.connectToServer(nameInputField.getText(), ipInputField.getText());
+        serverOut.connectToServer(nameInputField.getText(), ipInputField.getText());
         loginButton.setDisable(true);
         connectionLabel.setText("Verbonden met de Server, als " + nameInputField.getText());
-        sIn = new ServerIn(model.returnSocket().getInputStream());
+        sIn = new ServerIn(serverOut.returnSocket().getInputStream());
         new Thread(sIn).start();
-        model.sendToServer("get playerlist");
+        serverOut.sendToServer("get playerlist");
         playerBox.setItems(sIn.returnOptions());
 
         newGame = true;
@@ -130,7 +130,7 @@ public class Controller implements Runnable{
                                 Stage challengeStage = new Stage();
                                 challengeStage.setScene(new Scene(loader1.load()));
                                 ChallengeController challengeController = loader1.<ChallengeController>getController();
-                                challengeController.initData(model, sIn, loginButton.getScene().getWindow(), opponent, challengeNr, gameType);
+                                challengeController.initData(serverOut, sIn, loginButton.getScene().getWindow(), opponent, challengeNr, gameType);
                                 challengeStage.show();
 //                            loginButton.getScene().getWindow().hide();
                             }
@@ -160,7 +160,7 @@ public class Controller implements Runnable{
                             Stage gamestage = new Stage();
                             gamestage.setScene(new Scene(loader.load()));
                             BKEGameController gamecontroller = loader.<BKEGameController>getController();
-                            gamecontroller.initData(model, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+                            gamecontroller.initData(serverOut, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
                             loginButton.getScene().getWindow().setOnHidden(e -> {
                                 subscribeButton.setDisable(false);
                                 connectionLabel.setText("Match bezig of klaar!");
@@ -192,7 +192,7 @@ public class Controller implements Runnable{
                             Stage gamestage = new Stage();
                             gamestage.setScene(new Scene(loader.load()));
                             OTHGameController gamecontroller = loader.<OTHGameController>getController();
-                            gamecontroller.initModel(model, sIn);
+                            gamecontroller.initModel(serverOut, sIn);
                             gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow(), bot);
                             loginButton.getScene().getWindow().setOnHidden(e -> {
                                 subscribeButton.setDisable(false);
@@ -211,7 +211,7 @@ public class Controller implements Runnable{
 
     @FXML public void doRefreshPLR(){
         playerBox.getItems().clear();
-        model.sendToServer("get playerlist");
+        serverOut.sendToServer("get playerlist");
         playerBox.setItems(sIn.returnOptions());
 //        getChallenge();
 //        drawBoard();
@@ -221,11 +221,11 @@ public class Controller implements Runnable{
         //TODO Niet hardcoden
         if(tttRadio.isSelected()) {
             System.out.println("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
-            model.sendToServer("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
+            serverOut.sendToServer("challenge " + playerBox.getValue() + " \"Tic-tac-toe\"");
         }
         else if(othRadio.isSelected()){
             System.out.println("challenge " + playerBox.getValue() + " \"Reversi\"");
-            model.sendToServer("challenge " + playerBox.getValue() + " \"Reversi\"");
+            serverOut.sendToServer("challenge " + playerBox.getValue() + " \"Reversi\"");
         }
 //        drawBoard();
     }
@@ -234,7 +234,7 @@ public class Controller implements Runnable{
         newChallenge = false;
         subsribe = true;
         if(tttRadio.isSelected()){
-            model.sendToServer("subscribe Tic-tac-toe");
+            serverOut.sendToServer("subscribe Tic-tac-toe");
             subscribeButton.setDisable(true);
             connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
 //            drawBoard();
@@ -242,7 +242,7 @@ public class Controller implements Runnable{
 
         }
         if(othRadio.isSelected()){
-            model.sendToServer("subscribe Reversi");
+            serverOut.sendToServer("subscribe Reversi");
             subscribeButton.setDisable(true);
             connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
             newChallenge = false;
@@ -251,7 +251,7 @@ public class Controller implements Runnable{
     }
     @FXML void doLogout(){
         loginButton.setDisable(false);
-        model.sendToServer("bye");
+        serverOut.sendToServer("bye");
 //        shouldStop = true;
 
     }

@@ -22,7 +22,7 @@ public class OTHGameController {
     @FXML private Label ownNameLabel;
     @FXML private Label oppNameLabel;
     @FXML private Label turnLabel;
-    private Model model;
+    private ServerOut serverOut;
     private ServerIn sIn;
     private Cell[][] cell = new Cell[8][8];
     private int rowSelected;
@@ -73,11 +73,11 @@ public class OTHGameController {
     /**
      * Geeft de objecten mee voor de verbinding met de server.
      *
-     * @param conModel Model
+     * @param conServerOut ServerOut
      * @param consIn   ServerIn
      */
-    public void initModel(Model conModel, ServerIn consIn) {
-        model = conModel;
+    public void initModel(ServerOut conServerOut, ServerIn consIn) {
+        serverOut = conServerOut;
         sIn = consIn;
     }
 
@@ -97,7 +97,7 @@ public class OTHGameController {
      * @param cmd Het bericht
      */
     private void sendCommand(String cmd) {
-        model.sendToServer(cmd);
+        serverOut.sendToServer(cmd);
     }
 
     /**

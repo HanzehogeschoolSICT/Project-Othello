@@ -1,17 +1,12 @@
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-
-import java.io.IOException;
 
 /**
  * TODO: Status labels updaten zonder dat de boel vastloopt.
@@ -26,7 +21,7 @@ public class BKEGameController {
     @FXML private Label turnLabel;
     @FXML private Button forfeitButton;
 
-    private Model model;
+    private ServerOut serverOut;
     public static ServerIn sIn;
     private Cell[][] cell = new Cell[3][3];
     private int rowSelected;
@@ -59,9 +54,9 @@ public class BKEGameController {
 
     public BKEGameController(){}
 
-    public void initData(Model conModel, ServerIn consIn, String name, Window window, boolean AI) throws InterruptedException{
+    public void initData(ServerOut conServerOut, ServerIn consIn, String name, Window window, boolean AI) throws InterruptedException{
         ownName = name;
-        model = conModel;
+        serverOut = conServerOut;
         sIn = consIn;
         controlGame();
         oldWindow = window;
@@ -168,7 +163,7 @@ public class BKEGameController {
                             sIn.resetTurn();
                             Platform.runLater(() -> setTeken((moveToDo / 3), (moveToDo % 3), ownToken));
                             //System.out.println("DEZE MOVE VERNEUKT ALLES" + moveToDo);
-                            model.sendToServer("move " + moveToDo);
+                            serverOut.sendToServer("move " + moveToDo);
                             //bkeAI.printBoard();
                         }
                         lastTurn=sIn.getTurn();
@@ -208,7 +203,7 @@ public class BKEGameController {
         bkeAI.reset();
         Stage primaryStage = (Stage)oldWindow;
         primaryStage.show();
-//        model.sendToServer("forfeit");
+//        serverOut.sendToServer("forfeit");
         gridPane.
                 getScene().getWindow().hide();
         Controller.newGame = true;
@@ -221,7 +216,7 @@ public class BKEGameController {
 
     @FXML
     public void doForfeit(){
-        model.sendToServer("forfeit");
+        serverOut.sendToServer("forfeit");
         check = 0;
     }
 
@@ -313,7 +308,7 @@ public class BKEGameController {
             if(!withAI) {
                 if (myTurn) {
                     Platform.runLater(() -> setTeken(row, column, ownToken));
-                    model.sendToServer("move " + (row * 3 + column));
+                    serverOut.sendToServer("move " + (row * 3 + column));
                     sIn.resetTurn();
                     myTurn = false;
                 }

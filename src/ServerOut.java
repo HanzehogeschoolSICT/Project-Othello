@@ -3,24 +3,28 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
-/**
- * Created by georg on 24-Mar-17.
- */
+
 public class ServerOut {
 
-    private ServerIn serverIn;
+    private ServerIn sIn;
+    private boolean connected = false;
     private PrintWriter out;
+    private Socket socket;
 
-    /**
-     * Connects with the game server, and imediatly logs in.
-     * @param name To login as
-     * @param hostname ip adress of game server
-     * @param port port of game server
-     * @throws IOException
-     */
-    public ServerOut(String name, String hostname, int port) throws IOException {
+    public void connectToServer(String name, String adress) throws IOException{
+        ServerOut(name, adress, 7789);
+        connected = true;
+    }
 
-        Socket socket = new Socket(hostname, port);
+
+    public Socket returnSocket() throws IOException{
+        return socket;
+    }
+
+
+    public void ServerOut(String name, String hostname, int port) throws IOException {
+
+        socket = new Socket(hostname, port);
 
         if (socket.isConnected()) {
             System.out.println("Connected on: " + hostname + ":" + port + "\n ");
@@ -29,9 +33,6 @@ public class ServerOut {
         // Create a printwriter, autoflush is enabled
         out = new PrintWriter(socket.getOutputStream(), true);
 
-        // Create a seperate thread to handle incoming responses
-        serverIn = new ServerIn(socket.getInputStream());
-        new Thread(serverIn).start();
 
         // Small connection delay
         try {
@@ -45,7 +46,8 @@ public class ServerOut {
     }
 
     /**
-     * Execute a command from System.in,
+     * Execute a command from System.in.
+     * FIXME: Momenteel buiten gebruik
      */
     public void readFromConsole(){
         Scanner reader = new Scanner(System.in);
@@ -54,7 +56,7 @@ public class ServerOut {
         // Stop listening thread
         if (input.equals("quit")) {
             System.out.println("Disconnecting server");
-            serverIn.disconnect();
+            sIn.disconnect();
             out.println("quit");
             return;
         }
@@ -62,7 +64,6 @@ public class ServerOut {
         out.println(input);
         readFromConsole();
     }
-
     /**
      * Execute a command from System.in,
      */
@@ -70,21 +71,11 @@ public class ServerOut {
         // Stop listening thread
         if (input.equals("quit")) {
             System.out.println("Disconnecting server");
-            serverIn.disconnect();
+            sIn.disconnect();
             out.println("quit");
             return;
         }
 
         out.println(input);
-    }
-
-    public static void main( String[] args ) {
-        try {
-            ServerOut server1 = new ServerOut("Henk", "localhost", 7789);
-            server1.readFromConsole();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

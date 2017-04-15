@@ -9,7 +9,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("connectForm.fxml"));
-        primaryStage.setTitle("Project Othello, eigenlijk BKE. Maar dat zeggen we niet");
+        primaryStage.setTitle("BKE/Othello Launcher");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }

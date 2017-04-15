@@ -1,14 +1,6 @@
-import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
@@ -22,7 +14,7 @@ public class ChallengeController {
     @FXML private Button challengeButton;
     @FXML private Label challengeLabel;
 
-    private Model model;
+    private ServerOut serverOut;
     private ServerIn sIn;
 
 
@@ -37,9 +29,9 @@ public class ChallengeController {
 
     public ChallengeController(){}
 
-    public void initData(Model conModel, ServerIn consIn, Window window, String name,String number, String game) throws InterruptedException{
+    public void initData(ServerOut conServerOut, ServerIn consIn, Window window, String name, String number, String game) throws InterruptedException{
         oppName = name;
-        model = conModel;
+        serverOut = conServerOut;
         sIn = consIn;
         oldWindow = window;
         gameType = game;
@@ -55,7 +47,7 @@ public class ChallengeController {
 
     @FXML
     public void doAccept() throws IOException{
-        model.sendToServer("challenge accept " + challengeNr);
+        serverOut.sendToServer("challenge accept " + challengeNr);
         Stage primaryStage = (Stage)oldWindow;
         primaryStage.show();
         challengeLabel.getScene().getWindow().hide();
