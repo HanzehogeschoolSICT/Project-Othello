@@ -4,9 +4,10 @@ import java.util.Random;
 public class TicTacToeAI extends AIClass {
     ArrayList<Integer> movesDone = new ArrayList<Integer>();
     int move;
+    String board;
 
     public TicTacToeAI(){
-        super.board = "#########";
+        board = "#########";
     }
 
     @Override
@@ -37,25 +38,25 @@ public class TicTacToeAI extends AIClass {
     public void processMove(int input, char c) {
         System.out.print("");
         movesDone.add(input);
-        super.board = adaptBoard(input,c);
+        board = adaptBoard(input,c);
     }
 
     private String adaptBoard(int input, char c){
         System.out.print("");
         if(input<0 || input>8){
-            return super.board;
+            return board;
         }
-        char[] chars = super.board.toCharArray();
+        char[] chars = board.toCharArray();
         chars[input] = c;
         return String.valueOf(chars);
     }
     public void printBoard(){
-        System.out.println(super.board);
+        System.out.println(board);
     }
 
     @Override
     void reset() {
-        super.board = "#########";
+        board = "#########";
         movesDone.clear();
     }
 }
