@@ -1,14 +1,10 @@
-import com.sun.xml.internal.bind.v2.TODO;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
@@ -17,319 +13,387 @@ import javafx.stage.Window;
  * Introduction to Java Programming.
  */
 public class OTHGameController {
-	@FXML
-	private Button quitButton;
-	@FXML
-	private Label statusLabel;
-	@FXML
-	private GridPane gridPane;
-	@FXML
-	private Label ownNameLabel;
-	@FXML
-	private Label oppNameLabel;
-	@FXML
-	private Label turnLabel;
+    private int check = 1;
+    private OthelloAI othAI;
+    private volatile OthelloBoard board;
+    @FXML private Button quitButton;
+    @FXML private Label statusLabel;
+    @FXML private GridPane gridPane;
+    @FXML private Label ownNameLabel;
+    @FXML private Label oppNameLabel;
+    @FXML private Label turnLabel;
+    private Model model;
+    private ServerIn sIn;
+    private Cell[][] cell = new Cell[8][8];
+    private int rowSelected;
+    private int columnSelected;
+    private String ownName;
+    private String opponentName;
+    private char ownToken;
+    private char oppToken;
+    private Window oldWindow;
+    private String lastMsg = "";
+    private String lastMove = "";
+    private String lastTurn = "";
+    private int finalMove;
+    private boolean myTurn;
+    private boolean withAI;
+    private int moveToDo;
+    private String gameResult;
 
-	private Model model;
-	private ServerIn sIn;
-	private Cell[][] cell = new Cell[8][8];
-	private int rowSelected;
-	private int columnSelected;
+    public OTHGameController() {
+    }
 
-	private String ownName;
-	private String opponentName;
-	private char ownToken;
-	private char oppToken;
-	private Window oldWindow;
+    /**
+     * Initializes naam, venster en AI.
+     *
+     * @param name   Spelernaam
+     * @param window De Scene van het conenctie-venster
+     * @param AI     De optie voor AI
+     * @throws InterruptedException
+     */
+    public void initData(String name, Window window, boolean AI) throws InterruptedException {
+        ownName = name;
+        oldWindow = window;
+        ownNameLabel.setText(ownName);
+        withAI = AI;
+        check = 1;
+        controlGame();
+    }
 
-	private String lastMsg = "";
-	private String lastMove = "";
-	private String lastTurn = "";
-
-	private int finalMove;
-
-	private boolean myTurn;
-	private boolean withAI;
-	private int moveToDo;
-	int check = 1;
-	OthelloAI othAI;
-	volatile OthelloBoard board;
-
-	private String gameResult;
-
-	public OTHGameController() {
-	}
-
-	public void initData(String name, Window window, boolean AI) throws InterruptedException {
-		ownName = name;
-		oldWindow = window;
-		ownNameLabel.setText(ownName);
-		withAI = AI;
-		check = 1;
-		controlGame();
-	}
-
-	@FXML
+    /**
+     * Geef op en stop ControlGame.
+     */
+    @FXML
     public void doForfeit() {
         sendCommand("forfeit");
         check = 0;
     }
-	
-	public void initModel(Model conModel, ServerIn consIn) {
-		model = conModel;
-		sIn = consIn;
-	}
 
-	public void updateLabel(Label upLabel, String text) {
-		Platform.runLater(() -> upLabel.setText(text));
-	}
+    /**
+     * Geeft de objecten mee voor de verbinding met de server.
+     *
+     * @param conModel Model
+     * @param consIn   ServerIn
+     */
+    public void initModel(Model conModel, ServerIn consIn) {
+        model = conModel;
+        sIn = consIn;
+    }
 
-	public void sendCommand(String cmd) {
-		model.sendToServer(cmd);
-	}
+    /**
+     * Update een label
+     *
+     * @param upLabel Label object
+     * @param text    De text
+     */
+    private void updateLabel(Label upLabel, String text) {
+        Platform.runLater(() -> upLabel.setText(text));
+    }
 
-	public void generateBoard() {
-		for (int x = 0; x < 8; x++) {
-			for (int y = 0; y < 8; y++) {
-				OthelloCoordinate coord;
-				coord = board.getCoordinate(x, y);
-				if (coord != null) {
-					setTeken(coord.getX(), coord.getY(), coord.getToken());
-				}
-			}
+    /**
+     * Verstuur een commande naar de server
+     *
+     * @param cmd Het bericht
+     */
+    private void sendCommand(String cmd) {
+        model.sendToServer(cmd);
+    }
 
-		}
-	}
+    /**
+     * Update het bord aan de hand van de opgeslagen coordinaten met de tokens
+     */
+    private void generateBoard() {
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                OthelloCoordinate coord;
+                coord = board.getCoordinate(x, y);
+                if (coord != null) {
+                    setTeken(coord.getX(), coord.getY(), coord.getToken());
+                }
+            }
 
-	public void controlGame() {
-		new Thread(() ->{
-		try{
-			while (check == 1) {
-			checkColor();
-		}
-		while (check == 2) {
-			playGame();
-		}
-	}catch(Exception ex){
-		ex.printStackTrace();}
-		}).start();
-	}
+        }
+    }
 
-	private void checkColor() {
-		if (!sIn.getMsg().equals(lastMsg) && !sIn.getMsg().equals("")) {
-			opponentName = sIn.getOppName();
-			if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + ownName + '"')) {
-				initBoard('B');
-				updateLabel(ownNameLabel, "Ik ben Zwart");
-				updateLabel(oppNameLabel, opponentName + " is  Wit");
-			}
-			if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + opponentName + '"')) {
-				initBoard('W');
-				updateLabel(ownNameLabel, "Ik ben Wit");
-				updateLabel(oppNameLabel, opponentName + " is Zwart");
-			}
-			lastMsg = sIn.getMsg();
-		}
-	}
+    /**
+     * Bestuurd het spel, roept CheckColor en Playgame aan.
+     */
+    private void controlGame() {
+        new Thread(() -> {
+            try {
+                while (check == 1) {
+                    checkColor();
+                }
+                while (check == 2) {
+                    playGame();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+    }
 
-	private void initBoard(char token) {
-		ownToken = token;
-		oppToken = token == 'W' ? 'B' : 'W';
-		if (withAI) {
-			othAI = new OthelloAI(token);
-			if(ownToken == 'B'){
-				moveToDo = othAI.getNewMove(-1);
-			}
-		}
-		board = new OthelloBoard(token);
-		generateBoard();
-		check = 2;
-	}
+    /**
+     * Checkt welke kleur je bent en initialiseerd het bord en de AI met je eigen token.
+     */
+    private void checkColor() {
+        if (!sIn.getMsg().equals(lastMsg) && !sIn.getMsg().equals("")) {
+            opponentName = sIn.getOppName();
+            if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + ownName + '"')) {
+                initBoard('B');
+                updateLabel(ownNameLabel, "Ik ben Zwart");
+                updateLabel(oppNameLabel, opponentName + " is  Wit");
+            }
+            if (sIn.getMsg().contains("PLAYERTOMOVE: " + '"' + opponentName + '"')) {
+                initBoard('W');
+                updateLabel(ownNameLabel, "Ik ben Wit");
+                updateLabel(oppNameLabel, opponentName + " is Zwart");
+            }
+            lastMsg = sIn.getMsg();
+        }
+    }
 
-	private void playGame() {
-		generateBoard();
-	    String message = sIn.getMove();
-		if (!message.equals(lastMove) ) {
-			if (message.contains(opponentName)) {
-			    processOpponentMove(message);
-				generateBoard();
-			}
-		}
+    /**
+     * Maakt een nieuw AI-object aan met token en berekend optioneel de eerste move.
+     * Maakt ook een lokaal bord aan voor de GUI.
+     *
+     * @param token Zwart of wit.
+     */
+    private void initBoard(char token) {
+        ownToken = token;
+        oppToken = token == 'W' ? 'B' : 'W';
+        if (withAI) {
+            othAI = new OthelloAI(token);
+            if (ownToken == 'B') {
+                moveToDo = othAI.getNewMove(-1);
+            }
+        }
+        board = new OthelloBoard(token);
+        generateBoard();
+        check = 2;
+    }
 
-        /*
-        TODO: het bord update niet goed als bij bot bij Player vs Bot
-          */
+    /**
+     * Deze functie kijkt wie er aan de beurt is en of het spel klaar is.
+     */
+    private void playGame() {
+        generateBoard();
+        String message = sIn.getMove();
+        if (!message.equals(lastMove)) {
+            if (message.contains(opponentName)) {
+                processOpponentMove(message);
+                generateBoard();
+            }
+        }
+        if (sIn.getTurn().contains("YOURTURN")) {
+            processOwnMove();
+            generateBoard();
+        }
 
-            if (sIn.getTurn().contains("YOURTURN")) {
-                System.out.println("hier gaat die voor de 2e keer in");
-//                myTurn = true;
-			    processOwnMove(message);
-				generateBoard();
-			}
-
-		if (sIn.endOfGame()) {
+        if (sIn.endOfGame()) {
             System.out.println(getGameResult());
             EoG.getEoMform(getGameResult());
-		    generateBoard();
-			resetBoard();
-			System.out.println("Schermutseling is voorbij!");
-		}
-		try {
-			Thread.sleep(300);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+            generateBoard();
+            resetBoard();
+            System.out.println("Schermutseling is voorbij!");
+        }
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-	private void processOpponentMove(String message) {
-			updateLabel(statusLabel, opponentName + " is aan de beurt!");
-			int move = parseMove(message);
-			if (withAI){
-			    moveToDo = othAI.getNewMove(move);
-			}
-			board.flipPaths(move, oppToken);
-			generateBoard();
-			lastMove = message;
-		}
-
-	private void processOwnMove(String message) {
-		updateLabel(statusLabel, "Jij bent aan de beurt!");
-		myTurn = true;
-		sIn.resetTurn();
-		if (withAI) {
-//			sIn.resetTurn();
-			if (finalMove != moveToDo && moveToDo != -1) {
-				board.flipPaths(moveToDo, ownToken);
-				sendCommand("move " + moveToDo);
-				while(!sIn.endOfGame() && othAI.board.findPossibleMoves(oppToken).size()==0){
-					moveToDo = othAI.getNewMove(-1);
-					if(moveToDo!=-1){
-						board.flipPaths(moveToDo, ownToken);
-						sendCommand("move " + moveToDo);
-					}
-					try {
-						Thread.sleep(300);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			generateBoard();
-			finalMove = moveToDo;
-		}
-		lastTurn = sIn.getTurn();
+    /**
+     * Verwerkt de zet van de tegenstander.
+     * @param message Het bericht(Bijv: MOVE: 8)
+     */
+    private void processOpponentMove(String message) {
+        updateLabel(statusLabel, opponentName + " is aan de beurt!");
+        int move = parseMove(message);
+        if (withAI) {
+            moveToDo = othAI.getNewMove(move);
+        }
+        board.flipPaths(move, oppToken);
         generateBoard();
-	}
+        lastMove = message;
+    }
 
-	private int parseMove(String message) {
-		String msg = message.substring(message.indexOf("MOVE:") + 7, message.indexOf(", DETAILS:") - 1);
-		return Integer.parseInt(msg);
-	}
+    /**
+     * Verwerkt je eigen zet en krijgt een nieuwe move voor de AI
+     */
+    private void processOwnMove() {
+        updateLabel(statusLabel, "Jij bent aan de beurt!");
+        myTurn = true;
+        sIn.resetTurn();
+        if (withAI) {
+            if (finalMove != moveToDo && moveToDo != -1) {
+                board.flipPaths(moveToDo, ownToken);
+                generateBoard();
+                sendCommand("move " + moveToDo);
+                while (!sIn.endOfGame() && othAI.board.findPossibleMoves(oppToken).size() == 0) {
+                    moveToDo = othAI.getNewMove(-1);
+                    if (moveToDo != -1) {
+                        board.flipPaths(moveToDo, ownToken);
+                        generateBoard();
+                        sendCommand("move " + moveToDo);
+                    }
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            generateBoard();
+            finalMove = moveToDo;
+        }
+        lastTurn = sIn.getTurn();
+        generateBoard();
+    }
 
-	@FXML
-	private void initialize() {
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				gridPane.add(cell[i][j] = new Cell(i, j), j, i);
-			}
-		}
-	}
+    /**
+     * Verwerkt move-bericht van de server, dit zou eigenlijk in de ServerIn moeten staan.
+     * @param message
+     * @return
+     */
+    private int parseMove(String message) {
+        String msg = message.substring(message.indexOf("MOVE:") + 7, message.indexOf(", DETAILS:") - 1);
+        return Integer.parseInt(msg);
+    }
 
-	public void resetBoard() {
-		Platform.runLater(() -> {
-			if (withAI) {
-				othAI.reset();
-			}
-			board.reset();
-			sIn.Reset();
-			oppToken = ' ';
-			ownToken = ' ';
-			opponentName = "";
-			check = 0;
-			for (int i = 0; i < 8; i++) {
-				for (int j = 0; j < 8; j++) {
-//					cell[i][j].getChildren().clear();
-				}
-			}
-		});
-	}
+    /**
+     * JavaFX initialize
+     */
+    @FXML private void initialize() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                gridPane.add(cell[i][j] = new Cell(i, j), j, i);
+            }
+        }
+    }
 
-	@FXML
-	public void doQuit() {
-		sendCommand("forfeit");
-		resetBoard();
-		if (withAI) {
-			othAI.reset();
-		}
-		sIn.Reset();
-		Stage primaryStage = (Stage) oldWindow;
-		primaryStage.show();
-		check = 1;
-		gridPane.getScene().getWindow().hide();
-		Controller.newGame = true;
-		Controller.challengeOpen = true;
-	}
+    /**
+     * Ruimt het bord op.
+     */
+    private void clearBoard() {
+        Platform.runLater(() -> {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    cell[i][j].getChildren().clear();
+                }
+            }
+        });
+    }
 
-	private void setTeken(int row, int column, char token) {
-		lastMsg = "";
-		lastMove = "";
-			Platform.runLater(() -> {
-				Circle steentje = new Circle(1000, 1000, 22.5);
-				steentje.setStroke(Color.GREY);
-				steentje.setFill(token == 'W' ? Color.WHITE : Color.BLACK);
-				steentje.setStrokeWidth(3);
-				cell[column][row].getChildren().add(steentje);
-			});
-		rowSelected = row;
-		columnSelected = column;
-	}
+    /**
+     * Reset alle waarden naar niks.
+     */
+    public void resetBoard() {
+        Platform.runLater(() -> {
+            if (withAI) {
+                othAI.reset();
+            }
+            board.reset();
+            sIn.Reset();
+            oppToken = ' ';
+            ownToken = ' ';
+            opponentName = "";
+            check = 0;
+        });
+    }
 
-    public String getGameResult(){
+    /**
+     * Verlaat het spel en laat het connectie-venster zien!
+     */
+    @FXML public void doQuit() {
+        sendCommand("forfeit");
+        resetBoard();
+        clearBoard();
+        if (withAI) {
+            othAI.reset();
+        }
+        sIn.Reset();
+        Stage primaryStage = (Stage) oldWindow;
+        primaryStage.show();
+        check = 1;
+        gridPane.getScene().getWindow().hide();
+        Controller.newGame = true;
+        Controller.challengeOpen = true;
+    }
+
+    /**
+     * Stel het teken in
+     * @param row de Row
+     * @param column Colom
+     * @param token Token, ex Wit of Zwart
+     */
+    private void setTeken(int row, int column, char token) {
+        lastMsg = "";
+        lastMove = "";
+        Platform.runLater(() -> {
+            Circle steentje = new Circle(1000, 1000, 22.5);
+            steentje.setStroke(Color.GREY);
+            steentje.setFill(token == 'W' ? Color.WHITE : Color.BLACK);
+            steentje.setStrokeWidth(3);
+            cell[column][row].getChildren().add(steentje);
+        });
+        rowSelected = row;
+        columnSelected = column;
+    }
+
+    /**
+     * Maak een bericht voor de uitslag.
+     * @return gameResult Het bericht
+     */
+    public String getGameResult() {
         System.out.println(sIn.getMsg());
 
-        if (sIn.getMsg().contains("SVR GAME WIN")){
+        if (sIn.getMsg().contains("SVR GAME WIN")) {
             gameResult = "Gefeliciteerd," + " je hebt gewonnen";
             System.out.println(gameResult);
-        }
-        else if(sIn.getMsg().contains("SVR GAME LOSS")){
+        } else if (sIn.getMsg().contains("SVR GAME LOSS")) {
             gameResult = "Je zuigt";
             System.out.println(gameResult);
-        }
-        else if (sIn.getMsg().contains("SVR GAME DRAW")){
+        } else if (sIn.getMsg().contains("SVR GAME DRAW")) {
             gameResult = "gelijk spelen is erger dan verliezen";
             System.out.println(gameResult);
         }
         return gameResult;
     }
 
-	public class Cell extends GridPane {
-		private int row;
-		private int column;
+    /**
+     * Inner-class voor de cells van de GridPane die de Steentjes houden.
+     */
+    public class Cell extends GridPane {
+        private int row;
+        private int column;
 
-		public Cell(int row, int column) {
-			this.row = row;
-			this.column = column;
-			setStyle("-fx-border-color: grey");
-			this.setPrefSize(2000, 2000);
-			this.setOnMouseClicked(e -> handleMouseClick());
+        public Cell(int row, int column) {
+            this.row = row;
+            this.column = column;
+            setStyle("-fx-border-color: grey");
+            this.setPrefSize(2000, 2000);
+            this.setOnMouseClicked(e -> handleMouseClick());
 
-		}
+        }
 
-		private void handleMouseClick() {
-			if (!withAI) {
-				OthelloCoordinate coord = new OthelloCoordinate((row * 8 + column));
-				coord.setToken(ownToken);
-				if (myTurn) {
+        private void handleMouseClick() {
+            if (!withAI) {
+                OthelloCoordinate coord = new OthelloCoordinate((row * 8 + column));
+                coord.setToken(ownToken);
+                if (myTurn) {
                     System.out.println("Ik zou moeten kunnen klikken");
                     if (board.isValid(coord, ownToken)) {
-						board.flipPaths((row * 8 + column), ownToken);
-						generateBoard();
-						sendCommand("move " + (row * 8 + column));
-						sIn.resetTurn();
-						myTurn = false;
-					}
-				}
-			}
-		}
-	}
+                        board.flipPaths((row * 8 + column), ownToken);
+                        generateBoard();
+                        sendCommand("move " + (row * 8 + column));
+                        sIn.resetTurn();
+                        myTurn = false;
+                    }
+                }
+            }
+        }
+    }
 }
