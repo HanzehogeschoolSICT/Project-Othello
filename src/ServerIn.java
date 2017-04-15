@@ -68,6 +68,7 @@ public class ServerIn implements Runnable {
         }
         if(line.contains("SVR GAME LOSS") || line.contains("SVR GAME DRAW") || line.contains("SVR GAME WIN")){
             endOfGame=true;
+            message = line;
         }
 
     }

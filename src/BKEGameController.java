@@ -197,17 +197,6 @@ public class BKEGameController {
 
     @FXML
     public void doQuit(){
-//        System.out.println("Hier doet die wat");
-//        resetBoard();
-//        bkeAI.reset();
-//        Stage primaryStage = (Stage)oldWindow;
-//        primaryStage.show();
-////        model.sendToServer("forfeit");
-//        gridPane.
-//                getScene().getWindow().hide();
-//        Controller.newGame = true;
-//        Controller.shouldStop = false;
-//        Controller.challengeOpen = true;
         quit();
 
 

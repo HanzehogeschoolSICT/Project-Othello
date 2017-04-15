@@ -147,7 +147,6 @@ public class Controller implements Runnable{
 
     public void drawBoard(){
         newScrene = false;
-//        t.stop();
         new Thread(() -> {
             newScrene = true;
             while (newScrene) {

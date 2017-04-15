@@ -54,6 +54,8 @@ public class OTHGameController {
 	OthelloAI othAI;
 	volatile OthelloBoard board;
 
+	private String gameResult;
+
 	public OTHGameController() {
 	}
 
@@ -144,18 +146,24 @@ public class OTHGameController {
 	}
 
 	private void playGame() {
-		String message = sIn.getMove();
+		generateBoard();
+	    String message = sIn.getMove();
 		if (!message.equals(lastMove) ) {
 			if (message.contains(opponentName)) {
 				processOpponentMove(message);
+				generateBoard();
 			}
 		}
 		if (!lastTurn.equals(sIn.getTurn())) {
 			if (sIn.getTurn().contains("YOURTURN")) {
 				processOwnMove(message);
+				generateBoard();
 			}
 		}
 		if (sIn.endOfGame()) {
+            System.out.println(getGameResult());
+            EoG.getEoMform(getGameResult());
+		    generateBoard();
 			resetBoard();
 			System.out.println("Schermutseling is voorbij!");
 		}
@@ -169,7 +177,9 @@ public class OTHGameController {
 	private void processOpponentMove(String message) {
 			updateLabel(statusLabel, opponentName + " is aan de beurt!");
 			int move = parseMove(message);
-			moveToDo = othAI.getNewMove(move);
+			if (withAI){
+			    moveToDo = othAI.getNewMove(move);
+			}
 			board.flipPaths(move, oppToken);
 			generateBoard();
 			lastMove = message;
@@ -200,6 +210,7 @@ public class OTHGameController {
 			finalMove = moveToDo;
 		}
 		lastTurn = sIn.getTurn();
+        generateBoard();
 	}
 
 	private int parseMove(String message) {
@@ -229,7 +240,7 @@ public class OTHGameController {
 			check = 0;
 			for (int i = 0; i < 8; i++) {
 				for (int j = 0; j < 8; j++) {
-					//cell[i][j].getChildren().clear();
+//					cell[i][j].getChildren().clear();
 				}
 			}
 		});
@@ -243,11 +254,12 @@ public class OTHGameController {
 			othAI.reset();
 		}
 		sIn.Reset();
-		model.sendToServer("subscribe Reversi");
 		Stage primaryStage = (Stage) oldWindow;
 		primaryStage.show();
 		check = 1;
 		gridPane.getScene().getWindow().hide();
+		Controller.newGame = true;
+		Controller.challengeOpen = true;
 	}
 
 	private void setTeken(int row, int column, char token) {
@@ -258,11 +270,29 @@ public class OTHGameController {
 				steentje.setStroke(Color.GREY);
 				steentje.setFill(token == 'W' ? Color.WHITE : Color.BLACK);
 				steentje.setStrokeWidth(3);
-				cell[row][column].getChildren().add(steentje);
+				cell[column][row].getChildren().add(steentje);
 			});
 		rowSelected = row;
 		columnSelected = column;
 	}
+
+    public String getGameResult(){
+        System.out.println(sIn.getMsg());
+
+        if (sIn.getMsg().contains("SVR GAME WIN")){
+            gameResult = "Gefeliciteerd," + " je hebt gewonnen";
+            System.out.println(gameResult);
+        }
+        else if(sIn.getMsg().contains("SVR GAME LOSS")){
+            gameResult = "Je zuigt";
+            System.out.println(gameResult);
+        }
+        else if (sIn.getMsg().contains("SVR GAME DRAW")){
+            gameResult = "gelijk spelen is erger dan verliezen";
+            System.out.println(gameResult);
+        }
+        return gameResult;
+    }
 
 	public class Cell extends GridPane {
 		private int row;
