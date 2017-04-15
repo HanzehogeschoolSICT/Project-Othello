@@ -50,7 +50,7 @@ public class OTHGameController {
      * @param name   Spelernaam
      * @param window De Scene van het conenctie-venster
      * @param AI     De optie voor AI
-     * @throws InterruptedException
+     * @throws InterruptedException Threads.
      */
     public void initData(String name, Window window, boolean AI) throws InterruptedException {
         ownName = name;
@@ -254,9 +254,9 @@ public class OTHGameController {
     }
 
     /**
-     * Verwerkt move-bericht van de server, dit zou eigenlijk in de ServerIn moeten staan.
-     * @param message
-     * @return
+     * Verwerkt move-bericht van de server
+     * @param message Het bericht
+     * @return de Move
      */
     private int parseMove(String message) {
         String msg = message.substring(message.indexOf("MOVE:") + 7, message.indexOf(", DETAILS:") - 1);
@@ -290,7 +290,7 @@ public class OTHGameController {
     /**
      * Reset alle waarden naar niks.
      */
-    public void resetBoard() {
+    private void resetBoard() {
         Platform.runLater(() -> {
             if (withAI) {
                 othAI.reset();
@@ -347,7 +347,7 @@ public class OTHGameController {
      * Maak een bericht voor de uitslag.
      * @return gameResult Het bericht
      */
-    public String getGameResult() {
+    private String getGameResult() {
         System.out.println(sIn.getMsg());
 
         if (sIn.getMsg().contains("SVR GAME WIN")) {
@@ -366,11 +366,11 @@ public class OTHGameController {
     /**
      * Inner-class voor de cells van de GridPane die de Steentjes houden.
      */
-    public class Cell extends GridPane {
+    private class Cell extends GridPane {
         private int row;
         private int column;
 
-        public Cell(int row, int column) {
+        private Cell(int row, int column) {
             this.row = row;
             this.column = column;
             setStyle("-fx-border-color: grey");
