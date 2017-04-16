@@ -382,13 +382,13 @@ public class OTHGameController {
         System.out.println(sIn.getMsg());
 
         if (sIn.getMsg().contains("SVR GAME WIN")) {
-            gameResult = "Gefeliciteerd," + " je hebt gewonnen";
+            gameResult = "Schermutseling gezegevierd! \n Wat een meesterlijke AI!";
             System.out.println(gameResult);
         } else if (sIn.getMsg().contains("SVR GAME LOSS")) {
-            gameResult = "Helaas pindakaas!!";
+            gameResult = "De nederlaag kwam hard aan, de schermutseling is verloren! \n Meedoen is belangrijker dan winnen.";
             System.out.println(gameResult);
         } else if (sIn.getMsg().contains("SVR GAME DRAW")) {
-            gameResult = "Gelijk spelen is erger dan verliezen";
+            gameResult = "Gelijk spelen is erger dan verliezen.";
             System.out.println(gameResult);
         }
         return gameResult;
