@@ -1,3 +1,4 @@
+package server;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import sun.net.ConnectionResetException;
@@ -32,7 +33,7 @@ public class ServerIn implements Runnable {
 
     public static boolean boolmyTurn = false;
 
-    ServerIn(InputStream in) throws IOException {
+    public ServerIn(InputStream in) throws IOException {
         inReader = new BufferedReader(new InputStreamReader(in));
     }
 

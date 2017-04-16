@@ -1,5 +1,8 @@
+package ai;
 import java.util.ArrayList;
 import java.util.Random;
+
+import model.OthelloBoard;
 
 public class OthelloAI extends AIClass {
 
@@ -86,6 +89,7 @@ public class OthelloAI extends AIClass {
      * Reset de ai
      */
     @Override
+	public
     void reset() {
         board.reset();
         movesDone.clear();

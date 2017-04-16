@@ -1,3 +1,5 @@
+package control;
+import ai.TicTacToeAI;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -7,6 +9,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import server.ServerIn;
+import server.ServerOut;
 
 /**
  * TODO: Status labels updaten zonder dat de boel vastloopt.

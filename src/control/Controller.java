@@ -1,9 +1,12 @@
+package control;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import server.ServerIn;
+import server.ServerOut;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -158,12 +161,12 @@ public class Controller implements Runnable {
 
     private void startGame(String game, boolean bot) throws Exception {
         if (game.equals("ttt")) {
-            loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
+            loader = new FXMLLoader(getClass().getResource("/view/BKEgameForm.fxml"));
             gamestage.setScene(new Scene(loader.load()));
             BKEGameController gamecontroller = loader.<BKEGameController>getController();
             gamecontroller.initData(serverOut, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
         } else if (game.equals("oth")) {
-            loader = new FXMLLoader(getClass().getResource("OTHgameForm.fxml"));
+            loader = new FXMLLoader(getClass().getResource("/view/OTHgameForm.fxml"));
             gamestage.setScene(new Scene(loader.load()));
             OTHGameController gamecontroller = loader.<OTHGameController>getController();
             gamecontroller.initModel(serverOut, sIn);

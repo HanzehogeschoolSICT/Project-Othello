@@ -1,3 +1,4 @@
+package control;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -6,13 +7,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import testing.Tester;
 
 public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
         Tester tester = new Tester();
-        Parent root = FXMLLoader.load(getClass().getResource("connectForm.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/view/connectForm.fxml"));
         primaryStage.setTitle("BKE/Othello Launcher");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();

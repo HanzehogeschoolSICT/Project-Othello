@@ -1,3 +1,5 @@
+package control;
+import ai.OthelloAI;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -7,6 +9,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import model.OthelloBoard;
+import model.OthelloCoordinate;
+import server.ServerIn;
+import server.ServerOut;
 
 /**
  * Gebruikte bronnen:
@@ -250,7 +256,7 @@ public class OTHGameController {
                 board.flipPaths(moveToDo, ownToken);
                 generateBoard();
                 sendCommand("move " + moveToDo);
-                while (!sIn.endOfGame() && othAI.board.findPossibleMoves(oppToken).size() == 0) {
+                while (!sIn.endOfGame() && othAI.getBoard().findPossibleMoves(oppToken).size() == 0) {
                     moveToDo = othAI.getNewMove(-1);
                     if (moveToDo != -1) {
                         board.flipPaths(moveToDo, ownToken);
