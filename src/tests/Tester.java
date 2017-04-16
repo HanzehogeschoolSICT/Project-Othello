@@ -1,4 +1,8 @@
+package tests;
+
 import java.util.ArrayList;
+
+import model.OthelloBoard;
 
 /**
  * Test wat moves!

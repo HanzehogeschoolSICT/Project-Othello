@@ -1,3 +1,4 @@
+package ai;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -55,6 +56,7 @@ public class TicTacToeAI extends AIClass {
     }
 
     @Override
+	public
     void reset() {
         board = "#########";
         movesDone.clear();

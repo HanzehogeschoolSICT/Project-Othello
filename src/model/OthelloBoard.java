@@ -1,3 +1,4 @@
+package model;
 import java.util.ArrayList;
 
 
@@ -6,7 +7,7 @@ public class OthelloBoard implements Cloneable{
 	private ArrayList<Integer> possibleMoves = new ArrayList<Integer>();
 	char ownToken;
 	
-	OthelloBoard(char c){
+	public OthelloBoard(char c){
 		ownToken = c;
 		reset();
 	}
@@ -18,7 +19,7 @@ public class OthelloBoard implements Cloneable{
 	}
 
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException {
 		ArrayList<OthelloCoordinate> boardclone = new ArrayList<>();
 		ArrayList<Integer> possibleMovesClone = (ArrayList<Integer>) possibleMoves.clone();
 		for (OthelloCoordinate coord: board) {
@@ -128,7 +129,7 @@ public class OthelloBoard implements Cloneable{
      * @param token De kleur die de zet gaat maken
      * @return possibleMoves Een lijst met mogelijke moves die de kleur token kan maken
      */
-	synchronized ArrayList<Integer> findPossibleMoves(char token){
+	public synchronized ArrayList<Integer> findPossibleMoves(char token){
 		possibleMoves.clear();
 		for (OthelloCoordinate coord : board){
 			searchSurroundingCorners(coord, token);

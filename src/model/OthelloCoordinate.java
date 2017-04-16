@@ -1,3 +1,4 @@
+package model;
 
 public class OthelloCoordinate implements Cloneable {
 
