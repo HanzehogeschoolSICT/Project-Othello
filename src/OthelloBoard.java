@@ -1,16 +1,21 @@
 import java.util.ArrayList;
 
 
-public class OthelloBoard {
+public class OthelloBoard implements Cloneable{
 	ArrayList<OthelloCoordinate> board = new ArrayList<OthelloCoordinate>();
 	private ArrayList<Integer> possibleMoves = new ArrayList<Integer>();
 	char ownToken;
 	
 	OthelloBoard(char c){
 		ownToken = c;
-		reset();		
+		reset();
 	}
-	
+
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
+
 	/**
      * voegt een coordinaat toe an het bord. Als het coordinaat al in het bord zit,
      *  dan verandert het het token naar het token van het nieuwe coordinaat.
@@ -168,7 +173,7 @@ public class OthelloBoard {
      * Kijkt voor een bepaald coordinaat of er een legaal pad is naar andere steentjes.
      * @param coord Het coordinaat waarvan we kijken of hij een pad heeft
      * @param token De kleur die de zet gaat maken.
-     * @return boolean true als er minstens één pad gevonden is, false als er geen pad te vinden is.
+     * @return boolean true als er minstens ï¿½ï¿½n pad gevonden is, false als er geen pad te vinden is.
      */
 	private boolean hasPossiblePath(OthelloCoordinate coord, char token) {
 		for(int i=-1;i<=1;i++){
@@ -222,15 +227,13 @@ public class OthelloBoard {
 	
 	/**
      * Kijkt of een bepaald coordinaat binnen het bord zit.
-     * @param coordIn Het coordinaat.
+     * @param coord Het coordinaat.
      * @return boolean true als het coordinaat binnen het bord zit, fals als het niet binnen het bord zit.
      */
 	private boolean isInBoard(OthelloCoordinate coord){
 		int x = coord.getX();
 		int y = coord.getY();
 		return ((x>=0 && x < 8) && (y>=0 && y < 8));
-		
-		
 	}
 
 	/**
