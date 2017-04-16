@@ -9,11 +9,12 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class Controller implements Runnable {
-    public static Thread t;
+    private static Thread t;
     public static volatile boolean shouldStop = false;
     public static Boolean challengeOpen;
     public static Boolean newGame = false;
     private static Controller instance = null;
+
     @FXML
     private Button loginButton;
     @FXML
@@ -40,6 +41,7 @@ public class Controller implements Runnable {
     private Button logoutButton;
     @FXML
     private CheckBox battleBox;
+
     private ServerOut serverOut = new ServerOut();
     private ServerIn sIn;
     private Boolean newChallenge;
@@ -49,14 +51,14 @@ public class Controller implements Runnable {
     private Boolean subsribe = false;
     private Boolean newScrene = false;
 
-    FXMLLoader loader ;
-    Stage gamestage = new Stage();
+    private FXMLLoader loader;
+    private Stage gamestage = new Stage();
 
     public Controller() {
         t = new Thread(this, "newGame Thread");
     }
 
-    public void start() {
+    private void start() {
         t.start();
     }
 
@@ -116,7 +118,7 @@ public class Controller implements Runnable {
         start();
     }
 
-    public void getChallenge() {
+    private void getChallenge() {
         newChallenge = false;
         new Thread(() -> {
             newChallenge = true;
@@ -131,36 +133,36 @@ public class Controller implements Runnable {
 
     }
 
-    private void initChallenge(){
+    private void initChallenge() {
         opponent = sIn.getMsg().substring(sIn.getMsg().indexOf("CHALLENGER:") + 13, sIn.getMsg().indexOf("\", CHALLENGENUMBER:"));
         challengeNr = sIn.getMsg().substring(sIn.getMsg().indexOf("CHALLENGENUMBER:") + 18, sIn.getMsg().indexOf("\", GAMETYPE:"));
         gameType = sIn.getMsg().substring(sIn.getMsg().indexOf("GAMETYPE:") + 11, sIn.getMsg().length() - 2);
     }
 
-    private void showChallenge(){
+    private void showChallenge() {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Uitdaging!");
             alert.setHeaderText(opponent + " daagt je uit, accepteer je?");
             alert.setContentText("Game: " + gameType);
             Optional<ButtonType> result = alert.showAndWait();
-            if(result.get() == ButtonType.OK){
+            if (result.get() == ButtonType.OK) {
                 serverOut.sendToServer("challenge accept " + challengeNr);
             } else {
-               sIn.resetChallenge();
-               challengeOpen = true;
+                sIn.resetChallenge();
+                challengeOpen = true;
 
             }
         });
     }
 
-    private void startGame(String game, boolean bot) throws Exception{
-        if(game.equals("ttt")) {
+    private void startGame(String game, boolean bot) throws Exception {
+        if (game.equals("ttt")) {
             loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
             gamestage.setScene(new Scene(loader.load()));
             BKEGameController gamecontroller = loader.<BKEGameController>getController();
             gamecontroller.initData(serverOut, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
-        } else if(game.equals("oth")) {
+        } else if (game.equals("oth")) {
             loader = new FXMLLoader(getClass().getResource("OTHgameForm.fxml"));
             gamestage.setScene(new Scene(loader.load()));
             OTHGameController gamecontroller = loader.<OTHGameController>getController();
@@ -170,29 +172,30 @@ public class Controller implements Runnable {
         }
     }
 
-    public void drawBoard(){
+    private void drawBoard() {
         new Thread(() -> {
             newScrene = true;
             while (newScrene) {
                 if (sIn.getConnected()) {
                     Platform.runLater(() -> {
                         try {
-                            if(tttRadio.isSelected()) {
+                            if (tttRadio.isSelected()) {
                                 startGame("ttt", botRadio.isSelected());
-                            } else if(othRadio.isSelected()) {
+                            } else if (othRadio.isSelected()) {
                                 startGame("oth", botRadio.isSelected());
                             }
                             changeViews(gamestage);
-                        } catch(Exception ex) {
+                        } catch (Exception ex) {
                             ex.printStackTrace();
                         }
-                    });newScrene = false;
+                    });
+                    newScrene = false;
                 }
             }
         }).start();
     }
 
-    public void changeViews(Stage changeStage){
+    private void changeViews(Stage changeStage) {
         Platform.runLater(() -> {
             loginButton.getScene().getWindow().setOnHidden(e -> {
                 subscribeButton.setDisable(false);

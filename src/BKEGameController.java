@@ -13,48 +13,46 @@ import javafx.stage.Window;
  * Gebruikte bronnen: Introduction to Java Programming.
  */
 public class BKEGameController {
-    @FXML private Button quitButton;
-    @FXML private Label statusLabel;
-    @FXML private GridPane gridPane;
-    @FXML private Label ownNameLabel;
-    @FXML private Label oppNameLabel;
-    @FXML private Label turnLabel;
-    @FXML private Button forfeitButton;
-
-    private ServerOut serverOut;
     public static ServerIn sIn;
+    public String gameStatus;
+    public String gameResult;
+    int check = 1;
+    TicTacToeAI bkeAI = new TicTacToeAI();
+    @FXML
+    private Button quitButton;
+    @FXML
+    private Label statusLabel;
+    @FXML
+    private GridPane gridPane;
+    @FXML
+    private Label ownNameLabel;
+    @FXML
+    private Label oppNameLabel;
+    @FXML
+    private Label turnLabel;
+    @FXML
+    private Button forfeitButton;
+    private ServerOut serverOut;
     private Cell[][] cell = new Cell[3][3];
     private int rowSelected;
     private int columnSelected;
-
     private String ownName;
     private String opponentName;
     private String ownToken;
     private String oppToken;
     private Window oldWindow;
-
     private String lastMsg = "";
     private String lastMove = "";
     private String lastTurn = "";
-
-
     private boolean myTurn;
     private boolean withAI;
     private int moveToDo;
-    int check = 1;
-
-    public String gameStatus;
-
-    public String gameResult;
 
 
+    public BKEGameController() {
+    }
 
-    TicTacToeAI bkeAI = new TicTacToeAI();
-
-
-    public BKEGameController(){}
-
-    public void initData(ServerOut conServerOut, ServerIn consIn, String name, Window window, boolean AI) throws InterruptedException{
+    public void initData(ServerOut conServerOut, ServerIn consIn, String name, Window window, boolean AI) throws InterruptedException {
         ownName = name;
         serverOut = conServerOut;
         sIn = consIn;
@@ -65,17 +63,17 @@ public class BKEGameController {
     }
 
     @FXML
-    private void initialize(){
-        for (int i=0; i<3; i++){
-            for(int j = 0; j<3; j++){
+    private void initialize() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
                 gridPane.add(cell[i][j] = new Cell(i, j), j, i);
             }
         }
     }
 
-    public void resetBoard(){
-        for (int i=0; i<3; i++){
-            for(int j = 0; j<3; j++){
+    public void resetBoard() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
                 cell[i][j].getChildren().clear();
             }
         }
@@ -86,12 +84,12 @@ public class BKEGameController {
         oppToken = "";
     }
 
-    public void controlGame() throws InterruptedException{
+    public void controlGame() throws InterruptedException {
         new Thread(() -> {
-            try{
-                while(check==1){
+            try {
+                while (check == 1) {
                     System.out.print("");
-                    if(!sIn.getMsg().equals(lastMsg)) {
+                    if (!sIn.getMsg().equals(lastMsg)) {
                         if (!sIn.getMsg().equals("")) {
                             if (sIn.getMsg().contains("PLAYERTOMOVE")) {
                                 opponentName = sIn.getMsg().substring(sIn.getMsg().indexOf("OPPONENT") + 11, sIn.getMsg().length() - 2);
@@ -127,63 +125,65 @@ public class BKEGameController {
                     }
                 }
                 System.out.print("");
-                while(check==2) {
+                while (check == 2) {
                     String message = sIn.getMove();
-                    if(!message.equals(lastMove)){
-                    if(message.contains(opponentName)){
-                        Platform.runLater(() -> turnLabel.setText("Jij bent aan de beurt!!! deze veranderd"));
-                        String msg = message;
-                        msg = msg.substring(msg.indexOf("MOVE:") + 7, msg.length()-15);
-                        int move = Integer.parseInt(msg);
-                        Platform.runLater(() -> setTeken((move / 3), (move % 3), oppToken));
-                        if(withAI) {
-                            System.out.print("");
-                            moveToDo = bkeAI.getNewMove(move);
-                            //bkeAI.printBoard();
+                    if (!message.equals(lastMove)) {
+                        if (message.contains(opponentName)) {
+                            Platform.runLater(() -> turnLabel.setText("Jij bent aan de beurt!!! deze veranderd"));
+                            String msg = message;
+                            msg = msg.substring(msg.indexOf("MOVE:") + 7, msg.length() - 15);
+                            int move = Integer.parseInt(msg);
+                            Platform.runLater(() -> setTeken((move / 3), (move % 3), oppToken));
+                            if (withAI) {
+                                System.out.print("");
+                                moveToDo = bkeAI.getNewMove(move);
+                                //bkeAI.printBoard();
+                            }
+                            lastMove = message;
                         }
-                        lastMove=message;
-                    }}
-                    if(!message.contains(opponentName)){
+                    }
+                    if (!message.contains(opponentName)) {
                         Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!! deze veranderd"));
                     }
-                    if(sIn.endOfGame()){
+                    if (sIn.endOfGame()) {
                         //Platform.runLater(() -> subscribeButton.setDisable(false));
                         System.out.print("");
-                        check=0;
+                        check = 0;
                         Platform.runLater(() -> quit());
-                     //   EoG.getEoMform(getGameResult());
+                        //   EoG.getEoMform(getGameResult());
                         Thread.currentThread().interrupt();
                     }
-                    if(!lastTurn.equals(sIn.getTurn())){
+                    if (!lastTurn.equals(sIn.getTurn())) {
 //                        Platform.runLater(() -> turnLabel.setText("De tegenstander is aan de beurt!!! deze veranderd"));
-                    if(sIn.getTurn().contains("YOURTURN")){
+                        if (sIn.getTurn().contains("YOURTURN")) {
 //                        Platform.runLater(() -> turnLabel.setText("Je bent aan de beurt! Snel, doe een zet!"));
-                        myTurn = true;
-                        if(withAI){
-                            sIn.resetTurn();
-                            Platform.runLater(() -> setTeken((moveToDo / 3), (moveToDo % 3), ownToken));
-                            //System.out.println("DEZE MOVE VERNEUKT ALLES" + moveToDo);
-                            serverOut.sendToServer("move " + moveToDo);
-                            //bkeAI.printBoard();
-                        }
-                        lastTurn=sIn.getTurn();
+                            myTurn = true;
+                            if (withAI) {
+                                sIn.resetTurn();
+                                Platform.runLater(() -> setTeken((moveToDo / 3), (moveToDo % 3), ownToken));
+                                //System.out.println("DEZE MOVE VERNEUKT ALLES" + moveToDo);
+                                serverOut.sendToServer("move " + moveToDo);
+                                //bkeAI.printBoard();
+                            }
+                            lastTurn = sIn.getTurn();
 
 //                         FIXME Als je dit toevoegd gaat er iets heel fout.
 
 
-                    }} else if(sIn.getTurn().contains("YOURTURN") ){
+                        }
+                    } else if (sIn.getTurn().contains("YOURTURN")) {
                         myTurn = true;
 
 
                     }
-                    if(withAI){
+                    if (withAI) {
                         Thread.sleep(1250);
-                    } else{
+                    } else {
                         Thread.sleep(100);
                     }
                 }
                 //Thread.sleep(100);
-            } catch (Exception ex){
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
@@ -191,17 +191,17 @@ public class BKEGameController {
     }
 
     @FXML
-    public void doQuit(){
+    public void doQuit() {
         quit();
 
 
     }
 
-    public void quit(){
+    public void quit() {
         System.out.println("Hier doet die wat");
         resetBoard();
         bkeAI.reset();
-        Stage primaryStage = (Stage)oldWindow;
+        Stage primaryStage = (Stage) oldWindow;
         primaryStage.show();
 //        serverOut.sendToServer("forfeit");
         gridPane.
@@ -211,33 +211,29 @@ public class BKEGameController {
         Controller.challengeOpen = true;
 
 
-
     }
 
     @FXML
-    public void doForfeit(){
+    public void doForfeit() {
         serverOut.sendToServer("forfeit");
         check = 0;
     }
 
-    public String getGameResult(){
+    public String getGameResult() {
         System.out.println(sIn.getMsg());
 
-        if (sIn.getMsg().contains("SVR GAME WIN")){
+        if (sIn.getMsg().contains("SVR GAME WIN")) {
             gameResult = "Gefeliciteerd," + " je hebt gewonnen";
             System.out.println(gameResult);
-        }
-        else if(sIn.getMsg().contains("SVR GAME LOSS")){
+        } else if (sIn.getMsg().contains("SVR GAME LOSS")) {
             gameResult = "Je zuigt";
             System.out.println(gameResult);
-        }
-        else if (sIn.getMsg().contains("SVR GAME DRAW")){
+        } else if (sIn.getMsg().contains("SVR GAME DRAW")) {
             gameResult = "gelijk spelen is erger dan verliezen";
             System.out.println(gameResult);
         }
         return gameResult;
     }
-
 
 
     private synchronized void setTeken(int row, int column, String token) {
@@ -255,9 +251,7 @@ public class BKEGameController {
         System.out.print("");
 
 
-
     }
-
 
 
     public class Cell extends GridPane {
@@ -265,7 +259,7 @@ public class BKEGameController {
         private int row;
         private int column;
 
-        public Cell(int row, int column){
+        public Cell(int row, int column) {
             this.row = row;
             this.column = column;
             setStyle("-fx-border-color: black");
@@ -274,8 +268,8 @@ public class BKEGameController {
 
         }
 
-        private void handleMouseClick(){
-            if(!withAI) {
+        private void handleMouseClick() {
+            if (!withAI) {
                 if (myTurn) {
                     Platform.runLater(() -> setTeken(row, column, ownToken));
                     serverOut.sendToServer("move " + (row * 3 + column));
@@ -284,8 +278,6 @@ public class BKEGameController {
                 }
             }
         }
-
-
 
 
     }

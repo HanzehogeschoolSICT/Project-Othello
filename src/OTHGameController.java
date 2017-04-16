@@ -7,7 +7,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import sun.plugin2.main.server.HeartbeatThread;
 
 /**
  * Gebruikte bronnen:
@@ -17,12 +16,18 @@ public class OTHGameController {
     private int check = 1;
     private OthelloAI othAI;
     private volatile OthelloBoard board;
-    @FXML private Button quitButton;
-    @FXML private Label statusLabel;
-    @FXML private GridPane gridPane;
-    @FXML private Label ownNameLabel;
-    @FXML private Label oppNameLabel;
-    @FXML private Label turnLabel;
+    @FXML
+    private Button quitButton;
+    @FXML
+    private Label statusLabel;
+    @FXML
+    private GridPane gridPane;
+    @FXML
+    private Label ownNameLabel;
+    @FXML
+    private Label oppNameLabel;
+    @FXML
+    private Label turnLabel;
     private ServerOut serverOut;
     private ServerIn sIn;
     private Cell[][] cell = new Cell[8][8];
@@ -62,10 +67,11 @@ public class OTHGameController {
 
     /**
      * Met AI? en of het een toernooi is? Lanceer daarna het spel!
-     * @param AI De optie voor AI
+     *
+     * @param AI         De optie voor AI
      * @param tournement De optie voor toernooi
      */
-    public void initSettings(boolean AI, boolean tournement){
+    public void initSettings(boolean AI, boolean tournement) {
         withAI = AI;
         tournament = tournement;
         controlGame();
@@ -84,7 +90,7 @@ public class OTHGameController {
      * Geeft de objecten mee voor de verbinding met de server.
      *
      * @param conServerOut ServerOut
-     * @param consIn   ServerIn
+     * @param consIn       ServerIn
      */
     public void initModel(ServerOut conServerOut, ServerIn consIn) {
         serverOut = conServerOut;
@@ -218,6 +224,7 @@ public class OTHGameController {
 
     /**
      * Verwerkt de zet van de tegenstander.
+     *
      * @param message Het bericht(Bijv: MOVE: 8)
      */
     private void processOpponentMove(String message) {
@@ -266,6 +273,7 @@ public class OTHGameController {
 
     /**
      * Verwerkt move-bericht van de server
+     *
      * @param message Het bericht
      * @return de Move
      */
@@ -277,7 +285,8 @@ public class OTHGameController {
     /**
      * JavaFX initialize
      */
-    @FXML private void initialize() {
+    @FXML
+    private void initialize() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 gridPane.add(cell[i][j] = new Cell(i, j), j, i);
@@ -298,15 +307,15 @@ public class OTHGameController {
         });
     }
 
-    private void resetData(){
+    private void resetData() {
         oppToken = ' ';
         ownToken = ' ';
         opponentName = "";
         check = 0;
     }
 
-    private void Exit(){
-        Platform.runLater(()->{
+    private void Exit() {
+        Platform.runLater(() -> {
             clearBoard();
             Stage primaryStage = (Stage) oldWindow;
             primaryStage.show();
@@ -322,10 +331,12 @@ public class OTHGameController {
      */
     private void resetBoard() {
         Platform.runLater(() -> {
-            if (withAI) {othAI.reset();}
+            if (withAI) {
+                othAI.reset();
+            }
             sIn.Reset();
             board.reset();
-            if(tournament){
+            if (tournament) {
                 Exit();
             }
         });
@@ -334,7 +345,8 @@ public class OTHGameController {
     /**
      * Verlaat het spel en laat het connectie-venster zien!
      */
-    @FXML public void doQuit() {
+    @FXML
+    public void doQuit() {
         sendCommand("forfeit");
         resetBoard();
         Exit();
@@ -342,9 +354,10 @@ public class OTHGameController {
 
     /**
      * Stel het teken in
-     * @param row de Row
+     *
+     * @param row    de Row
      * @param column Colom
-     * @param token Token, ex Wit of Zwart
+     * @param token  Token, ex Wit of Zwart
      */
     private void setTeken(int row, int column, char token) {
         lastMsg = "";
@@ -362,6 +375,7 @@ public class OTHGameController {
 
     /**
      * Maak een bericht voor de uitslag.
+     *
      * @return gameResult Het bericht
      */
     private String getGameResult() {
