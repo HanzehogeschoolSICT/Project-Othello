@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import sun.plugin2.main.server.HeartbeatThread;
 
 /**
  * TODO: Status labels updaten zonder dat de boel vastloopt. Gebruikte bronnen:
@@ -121,6 +122,7 @@ public class OTHGameController {
      */
     private void controlGame() {
         new Thread(() -> {
+
             try {
                 while (check == 1) {
                     checkColor();
@@ -354,10 +356,10 @@ public class OTHGameController {
             gameResult = "Gefeliciteerd," + " je hebt gewonnen";
             System.out.println(gameResult);
         } else if (sIn.getMsg().contains("SVR GAME LOSS")) {
-            gameResult = "Je zuigt";
+            gameResult = "Helaas pindakaas!!";
             System.out.println(gameResult);
         } else if (sIn.getMsg().contains("SVR GAME DRAW")) {
-            gameResult = "gelijk spelen is erger dan verliezen";
+            gameResult = "Gelijk spelen is erger dan verliezen";
             System.out.println(gameResult);
         }
         return gameResult;

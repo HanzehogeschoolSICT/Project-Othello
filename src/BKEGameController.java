@@ -151,7 +151,7 @@ public class BKEGameController {
                         System.out.print("");
                         check=0;
                         Platform.runLater(() -> quit());
-                        EoG.getEoMform(getGameResult());
+                     //   EoG.getEoMform(getGameResult());
                         Thread.currentThread().interrupt();
                     }
                     if(!lastTurn.equals(sIn.getTurn())){
@@ -238,37 +238,7 @@ public class BKEGameController {
         return gameResult;
     }
 
-//    public void getEoMform(){
-//
-//        System.out.println(sIn.getMsg());
-//
-//        if (sIn.getMsg().contains("SVR GAME WIN")){
-//            gameResult = "Gefeliciteerd," +
-//                    " je hebt gewonnen";
-//            System.out.println(gameResult);
-//        }
-//        else if(sIn.getMsg().contains("SVR GAME LOSS")){
-//            gameResult = "Je zuigt";
-//            System.out.println(gameResult);
-//        }
-//        else if (sIn.getMsg().contains("SVR GAME DRAW")){
-//            gameResult = "gelijk spelen is erger dan verliezen";
-//            System.out.println(gameResult);
-//        }
-//        Platform.runLater(() -> {
-//            try{
-//                FXMLLoader loader1 = new FXMLLoader();
-//                loader1.setLocation(ClassLoader.getSystemResource("EoMForm.fxml"));
-//                Stage EoMstage = new Stage();
-//                EoMstage.setScene(new Scene(loader1.load()));
-//                EoMController EoMcontroller = loader1.<EoMController>getController();
-//                EoMcontroller.initData(sIn, gameResult);
-//                EoMstage.show();
-//
-//            }catch(Exception ex) {
-//                ex.printStackTrace();
-//            }
-//        });}
+
 
     private synchronized void setTeken(int row, int column, String token) {
         lastMsg = "";

@@ -1,6 +1,8 @@
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 /**
@@ -11,19 +13,12 @@ public class EoG {
 
 
 public static void getEoMform(String gameResult){
-    Platform.runLater(() -> {
-        try{
-            FXMLLoader loader1 = new FXMLLoader();
-            loader1.setLocation(ClassLoader.getSystemResource("EoMForm.fxml"));
-            Stage EoMstage = new Stage();
-            EoMstage.setScene(new Scene(loader1.load()));
-            EoMController EoMcontroller = loader1.<EoMController>getController();
-            EoMcontroller.initData(gameResult);
-            EoMstage.show();
-        }
-        catch(Exception ex) {
-        ex.printStackTrace();
-        }
+    Platform.runLater(()->{
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Spel beeindigd");
+        alert.setHeaderText(gameResult);
+        alert.setContentText("Echt fantastisch!!");
+        alert.showAndWait();
 
     });
     }

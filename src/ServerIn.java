@@ -61,7 +61,7 @@ public class ServerIn implements Runnable {
         if (line.contains("PLAYERTOMOVE")) {
             message = line;
         }
-        if (line.contains("SVR GAME CHALLENGE")) {
+        if (line.contains("SVR GAME CHALLENGE") && !line.contains("SVR GAME CHALLENGE CANCELLED")) {
             challenge = true;
             message = line;
         }
@@ -146,6 +146,10 @@ public class ServerIn implements Runnable {
 
     public boolean getChallenge(){
         return challenge;
+    }
+
+    public void resetChallenge(){
+        challenge=false;
     }
 
     public  String getMsg() {

@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class Controller implements Runnable {
     public static Thread t;
@@ -45,6 +46,9 @@ public class Controller implements Runnable {
     private String gameType;
     private Boolean subsribe = false;
     private Boolean newScrene = false;
+
+    FXMLLoader loader ;
+    Stage gamestage = new Stage();
 
     public Controller() {
         t = new Thread(this, "newGame Thread");
@@ -130,45 +134,47 @@ public class Controller implements Runnable {
 
     private void showChallenge(){
         Platform.runLater(() -> {
-            try{
-                FXMLLoader loader1 = new FXMLLoader();
-                loader1.setLocation(ClassLoader.getSystemResource("challengeForm.fxml"));
-                Stage challengeStage = new Stage();
-                challengeStage.setScene(new Scene(loader1.load()));
-                ChallengeController challengeController = loader1.<ChallengeController>getController();
-                challengeController.initData(serverOut, sIn, loginButton.getScene().getWindow(), opponent, challengeNr, gameType);
-                challengeStage.show();
-            } catch (InterruptedException | IOException ex ){
-                ex.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Uitdaging!");
+            alert.setHeaderText(opponent + " daagt je uit, accepteer je?");
+            alert.setContentText("Game: " + gameType);
+            Optional<ButtonType> result = alert.showAndWait();
+            if(result.get() == ButtonType.OK){
+                serverOut.sendToServer("challenge accept " + challengeNr);
+            } else {
+               sIn.resetChallenge();
+               challengeOpen = true;
+
             }
         });
     }
 
+    private void startGame(String game, boolean bot) throws Exception{
+        if(game.equals("ttt")) {
+            loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
+            gamestage.setScene(new Scene(loader.load()));
+            BKEGameController gamecontroller = loader.<BKEGameController>getController();
+            gamecontroller.initData(serverOut, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+        } else if(game.equals("oth")) {
+            loader = new FXMLLoader(getClass().getResource("OTHgameForm.fxml"));
+            gamestage.setScene(new Scene(loader.load()));
+            OTHGameController gamecontroller = loader.<OTHGameController>getController();
+            gamecontroller.initModel(serverOut, sIn);
+            gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+        }
+    }
+
     public void drawBoard(){
-        newScrene = false;
-        newChallenge = false;
         new Thread(() -> {
             newScrene = true;
             while (newScrene) {
                 if (sIn.getConnected()) {
                     Platform.runLater(() -> {
                         try {
-                            boolean bot = false;
-                            if(botRadio.isSelected()){bot=true;}
-                            FXMLLoader loader ;
-                            Stage gamestage = new Stage();
-
                             if(tttRadio.isSelected()) {
-                                loader = new FXMLLoader(getClass().getResource("BKEgameForm.fxml"));
-                                gamestage.setScene(new Scene(loader.load()));
-                                BKEGameController gamecontroller = loader.<BKEGameController>getController();
-                                gamecontroller.initData(serverOut, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+                                startGame("ttt", botRadio.isSelected());
                             } else if(othRadio.isSelected()) {
-                                loader = new FXMLLoader(getClass().getResource("OTHgameForm.fxml"));
-                                gamestage.setScene(new Scene(loader.load()));
-                                OTHGameController gamecontroller = loader.<OTHGameController>getController();
-                                gamecontroller.initModel(serverOut, sIn);
-                                gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+                                startGame("oth", botRadio.isSelected());
                             }
                             changeViews(gamestage);
                         } catch(Exception ex) {
@@ -178,7 +184,6 @@ public class Controller implements Runnable {
                 }
             }
         }).start();
-
     }
 
     public void changeViews(Stage changeStage){
