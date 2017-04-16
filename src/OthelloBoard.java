@@ -11,9 +11,20 @@ public class OthelloBoard implements Cloneable{
 		reset();
 	}
 
+	OthelloBoard(ArrayList<OthelloCoordinate> board, ArrayList<Integer> possibleMoves, char ownToken) {
+		this.board = board;
+		this.possibleMoves = possibleMoves;
+		this.ownToken = ownToken;
+	}
+
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
-		return super.clone();
+		ArrayList<OthelloCoordinate> boardclone = new ArrayList<>();
+		ArrayList<Integer> possibleMovesClone = (ArrayList<Integer>) possibleMoves.clone();
+		for (OthelloCoordinate coord: board) {
+			boardclone.add((OthelloCoordinate) coord.clone());
+		}
+		return new OthelloBoard(boardclone, possibleMovesClone, ownToken);
 	}
 
 	/**
@@ -25,8 +36,7 @@ public class OthelloBoard implements Cloneable{
      * @param c De kleur van het coordinaat ('W' of 'B')
      */
 	public void addCoordinate(int x, int y, char c){
-		if(x >= 0 && x < 8 && y >= 0 && y < 8){
-			OthelloCoordinate coord = new OthelloCoordinate(x,y);
+		if(x >= 0 && x < 8 && y >= 0 && y < 8){			OthelloCoordinate coord = new OthelloCoordinate(x,y);
 			coord.setToken(c);
 			if(!board.contains(coord)){
 				board.add(coord);
@@ -46,8 +56,8 @@ public class OthelloBoard implements Cloneable{
      */
 	public void addCoordinate(int index, char c){
 		if(index >= 0 && index <64){
-			OthelloCoordinate coord = new OthelloCoordinate(index);
-			coord.setToken(c);
+				OthelloCoordinate coord = new OthelloCoordinate(index);
+				coord.setToken(c);
 			if(!hasCoord(coord)){
 				board.add(coord);
 			}else {

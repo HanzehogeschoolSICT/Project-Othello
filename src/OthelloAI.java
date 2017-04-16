@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class OthelloAI extends AIClass {
 
-    private static final int SEARCHDEPHT = 3;
+    private static final int SEARCHDEPHT = 9;
 
     ArrayList<Integer> movesDone = new ArrayList<Integer>();
     ArrayList<Integer> possibleMoves;
@@ -15,8 +15,8 @@ public class OthelloAI extends AIClass {
 
     int currentProcessingMove;
     //TODO change to better value deciding algorithm, currently minimized possible moves opponent
-    int bestMove;
-    int bestMoveValue = 100;
+    Integer  bestMove = null;
+    Integer bestMoveValue = -1;
 
 
     public OthelloAI(char c){
@@ -48,13 +48,20 @@ public class OthelloAI extends AIClass {
      * @return newMove De move die de ai gaat zetten. Op dit moment volledig random
      */
     private int calculateMove(){
+        bestMove = null;
+        bestMoveValue = -1;
         possibleMoves = board.findPossibleMoves(token);
         if(possibleMoves.size() > 0){
             try {
                 ArrayList<Integer> possiblemoves = (ArrayList<Integer>) board.findPossibleMoves(token).clone();
                 for(Integer move: possiblemoves) {
                     OthelloBoard clone = (OthelloBoard) board.clone();
-                    board.flipPaths(move, token);
+                    clone.flipPaths(move, token);
+
+                    System.out.println("CLONE " + (board.getBoard() == clone.getBoard()));
+                    System.out.println("CLONE2 " + (board.getBoard().get(0) == clone.getBoard().get(0)));
+                    System.out.println("CLONE3 " + (board.findPossibleMoves(token) == clone.findPossibleMoves(token)));
+
                     currentProcessingMove = move;
                     calculateMove(clone, false, 0);
                 }
@@ -74,7 +81,7 @@ public class OthelloAI extends AIClass {
             System.out.println("Now considering. " + currentProcessingMove);
             int opponentmoves = board.findPossibleMoves(oppositeToken).size();
 
-            if (opponentmoves < bestMoveValue) {
+            if (opponentmoves < bestMoveValue || bestMoveValue == -1) {
                 bestMoveValue = opponentmoves;
                 bestMove = currentProcessingMove;
                 System.out.println("New best move " + currentProcessingMove);
@@ -83,7 +90,7 @@ public class OthelloAI extends AIClass {
         }
 
         if (myturn) {
-            ArrayList<Integer> possiblemoves = (ArrayList<Integer>) board.findPossibleMoves(token).clone();
+            ArrayList<Integer> possiblemoves = board.findPossibleMoves(token);
 
             // No possible moves, give turn to opponent
             if (possiblemoves.size() == 0) {
@@ -91,12 +98,13 @@ public class OthelloAI extends AIClass {
             }
 
             for (Integer move: possiblemoves) {
-                board.flipPaths(move, token);
-                calculateMove((OthelloBoard) board.clone(), false, ++depth);
+                OthelloBoard clone = (OthelloBoard) board.clone();
+                clone.flipPaths(move, token);
+                calculateMove(clone, false, ++depth);
             }
         }
         else {
-            ArrayList<Integer> possiblemoves = (ArrayList<Integer>) board.findPossibleMoves(oppositeToken).clone();
+            ArrayList<Integer> possiblemoves = board.findPossibleMoves(oppositeToken);
 
             // No possible moves, give turn to opponent
             if (possiblemoves.size() == 0) {
@@ -104,8 +112,9 @@ public class OthelloAI extends AIClass {
             }
 
             for (Integer move: possiblemoves) {
-                board.flipPaths(move, oppositeToken);
-                calculateMove((OthelloBoard) board.clone(), true, ++depth);
+                OthelloBoard clone = (OthelloBoard) board.clone();
+                clone.flipPaths(move, oppositeToken);
+                calculateMove(clone, true, ++depth);
             }
         }
     }
