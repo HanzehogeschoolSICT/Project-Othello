@@ -10,7 +10,7 @@ import javafx.stage.Window;
 import sun.plugin2.main.server.HeartbeatThread;
 
 /**
- * TODO: Status labels updaten zonder dat de boel vastloopt. Gebruikte bronnen:
+ * Gebruikte bronnen:
  * Introduction to Java Programming.
  */
 public class OTHGameController {
@@ -39,6 +39,7 @@ public class OTHGameController {
     private int finalMove;
     private boolean myTurn;
     private boolean withAI;
+    private boolean tournament;
     private int moveToDo;
     private String gameResult;
 
@@ -50,15 +51,23 @@ public class OTHGameController {
      *
      * @param name   Spelernaam
      * @param window De Scene van het conenctie-venster
-     * @param AI     De optie voor AI
      * @throws InterruptedException Threads.
      */
-    public void initData(String name, Window window, boolean AI) throws InterruptedException {
+    public void initData(String name, Window window) throws InterruptedException {
         ownName = name;
         oldWindow = window;
         ownNameLabel.setText(ownName);
-        withAI = AI;
         check = 1;
+    }
+
+    /**
+     * Met AI? en of het een toernooi is? Lanceer daarna het spel!
+     * @param AI De optie voor AI
+     * @param tournement De optie voor toernooi
+     */
+    public void initSettings(boolean AI, boolean tournement){
+        withAI = AI;
+        tournament = tournement;
         controlGame();
     }
 
@@ -195,9 +204,9 @@ public class OTHGameController {
 
         if (sIn.endOfGame()) {
             System.out.println(getGameResult());
-            EoG.getEoMform(getGameResult());
             generateBoard();
             resetBoard();
+            EoG.getEoMform(getGameResult());
             System.out.println("Schermutseling is voorbij!");
         }
         try {
@@ -289,20 +298,36 @@ public class OTHGameController {
         });
     }
 
+    private void resetData(){
+        oppToken = ' ';
+        ownToken = ' ';
+        opponentName = "";
+        check = 0;
+    }
+
+    private void Exit(){
+        Platform.runLater(()->{
+            clearBoard();
+            Stage primaryStage = (Stage) oldWindow;
+            primaryStage.show();
+            check = 1;
+            gridPane.getScene().getWindow().hide();
+            Controller.newGame = true;
+            Controller.challengeOpen = true;
+        });
+    }
+
     /**
      * Reset alle waarden naar niks.
      */
     private void resetBoard() {
         Platform.runLater(() -> {
-            if (withAI) {
-                othAI.reset();
-            }
-            board.reset();
+            if (withAI) {othAI.reset();}
             sIn.Reset();
-            oppToken = ' ';
-            ownToken = ' ';
-            opponentName = "";
-            check = 0;
+            board.reset();
+            if(tournament){
+                Exit();
+            }
         });
     }
 
@@ -312,17 +337,7 @@ public class OTHGameController {
     @FXML public void doQuit() {
         sendCommand("forfeit");
         resetBoard();
-        clearBoard();
-        if (withAI) {
-            othAI.reset();
-        }
-        sIn.Reset();
-        Stage primaryStage = (Stage) oldWindow;
-        primaryStage.show();
-        check = 1;
-        gridPane.getScene().getWindow().hide();
-        Controller.newGame = true;
-        Controller.challengeOpen = true;
+        Exit();
     }
 
     /**
@@ -386,7 +401,6 @@ public class OTHGameController {
                 OthelloCoordinate coord = new OthelloCoordinate((row * 8 + column));
                 coord.setToken(ownToken);
                 if (myTurn) {
-                    System.out.println("Ik zou moeten kunnen klikken");
                     if (board.isValid(coord, ownToken)) {
                         board.flipPaths((row * 8 + column), ownToken);
                         generateBoard();

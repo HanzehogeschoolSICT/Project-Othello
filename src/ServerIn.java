@@ -27,6 +27,7 @@ public class ServerIn implements Runnable {
     private volatile boolean endOfGame = false;
     private volatile boolean challenge = false;
     private volatile String turn = "";
+    private final boolean checkLine = true;
     private ObservableList<String> options = FXCollections.observableArrayList();
 
     public static boolean boolmyTurn = false;
@@ -36,13 +37,7 @@ public class ServerIn implements Runnable {
     }
 
     private void parse(String line) throws IOException {
-        if (line.equals("OK")) {
-            //System.out.println("Commando ontvangen/succesvol");
-        }
-
-        // SVR commando met value
         if (line.matches("^SVR.*")) {
-            //System.out.println("Value ontvangen");
             SVRparser(line);
         }
         if (line.contains("SVR GAME MATCH")) {
@@ -58,14 +53,11 @@ public class ServerIn implements Runnable {
             turn = line;
             boolmyTurn = true;
         }
-        if (line.contains("PLAYERTOMOVE")) {
-            message = line;
-        }
         if (line.contains("SVR GAME CHALLENGE") && !line.contains("SVR GAME CHALLENGE CANCELLED")) {
             challenge = true;
             message = line;
         }
-        
+
         if (oppName == "" && line.contains("OPPONENT")) {
         	oppName = line.substring(line.indexOf("OPPONENT") + 11, line.length() - 2);
         }

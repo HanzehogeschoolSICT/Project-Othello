@@ -19,7 +19,7 @@ public class Controller implements Runnable {
     @FXML
     private TextField nameInputField;
     @FXML
-    private TextField ipInputField;
+    private ComboBox ipInputField;
     @FXML
     private Button challengeButton;
     @FXML
@@ -38,6 +38,8 @@ public class Controller implements Runnable {
     private RadioButton botRadio;
     @FXML
     private Button logoutButton;
+    @FXML
+    private CheckBox battleBox;
     private ServerOut serverOut = new ServerOut();
     private ServerIn sIn;
     private Boolean newChallenge;
@@ -66,10 +68,8 @@ public class Controller implements Runnable {
     public void run() {
         while (!shouldStop) {
             try {
-                t.sleep(2000);
+                t.sleep(500);
                 if (newGame) {
-                    System.out.println("thread is starting.....");
-                    System.out.println("checking for new Game");
                     if (sIn.getMsg().contains("Tic-tac-")) {
                         drawBoard();
                         newGame = false;
@@ -94,11 +94,16 @@ public class Controller implements Runnable {
 
     @FXML
     private void initialize() {
+        ipInputField.getItems().addAll(
+                "localhost",
+                "145.33.225.170",
+                "koekjesclan.nl"
+        );
     }
 
     @FXML
     public void doLogin() throws IOException {
-        serverOut.connectToServer(nameInputField.getText(), ipInputField.getText());
+        serverOut.connectToServer(nameInputField.getText(), ipInputField.getValue().toString());
         loginButton.setDisable(true);
         connectionLabel.setText("Verbonden met de Server, als " + nameInputField.getText());
         sIn = new ServerIn(serverOut.returnSocket().getInputStream());
@@ -160,7 +165,8 @@ public class Controller implements Runnable {
             gamestage.setScene(new Scene(loader.load()));
             OTHGameController gamecontroller = loader.<OTHGameController>getController();
             gamecontroller.initModel(serverOut, sIn);
-            gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow(), bot);
+            gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow());
+            gamecontroller.initSettings(bot, battleBox.isSelected());
         }
     }
 
@@ -192,6 +198,7 @@ public class Controller implements Runnable {
                 subscribeButton.setDisable(false);
                 connectionLabel.setText("Match bezig of klaar!");
             });
+            changeStage.setTitle("LEKKER SPELEN!");
             changeStage.show();
             loginButton.getScene().getWindow().hide();
         });
@@ -222,12 +229,11 @@ public class Controller implements Runnable {
         subscribeButton.setDisable(true);
         if (tttRadio.isSelected()) {
             serverOut.sendToServer("subscribe Tic-tac-toe");
-            connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
         }
         if (othRadio.isSelected()) {
             serverOut.sendToServer("subscribe Reversi");
-            connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
         }
+        connectionLabel.setText(nameInputField.getText() + ": Aan het wachten op een tegenstander...");
         newChallenge = false;
     }
 
