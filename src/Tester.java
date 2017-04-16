@@ -19,11 +19,4 @@ public class Tester
         }
         assert(lijst2.size()==4);
     }
-
-    public static void main(String[] args) {
-        Tester tester = new Tester();
-    }
-    /*
-    19, 26, 37, 44,
-     */
 }

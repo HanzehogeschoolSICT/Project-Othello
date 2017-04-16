@@ -11,6 +11,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+        Tester tester = new Tester();
         Parent root = FXMLLoader.load(getClass().getResource("connectForm.fxml"));
         primaryStage.setTitle("BKE/Othello Launcher");
         primaryStage.setScene(new Scene(root));
