@@ -1,4 +1,5 @@
 package control;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -82,8 +83,9 @@ public class Controller implements Runnable {
                     if (sIn.getMsg().contains("Reversi")) {
                         drawBoard();
                         newGame = false;
+                        System.out.println("KLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRRKLAAAARRRRR");
                     }
-                } else if (challengeOpen) {
+                } else if (challengeOpen && !battleBox.isSelected()) {
                     challengeOpen = false;
                     System.out.println("checking for challenges.....");
                     getChallenge();
@@ -92,7 +94,6 @@ public class Controller implements Runnable {
             } catch (InterruptedException ex) {
                 t.currentThread().interrupt();
             }
-
 
         }
     }
@@ -166,9 +167,20 @@ public class Controller implements Runnable {
             BKEGameController gamecontroller = loader.<BKEGameController>getController();
             gamecontroller.initData(serverOut, sIn, nameInputField.getText(), loginButton.getScene().getWindow(), bot);
         } else if (game.equals("oth")) {
+
+//            OTHGameController gamecontroller = new OTHGameController();
+//            loader = new FXMLLoader(getClass().getResource("/view/OTHgameForm.fxml"));
+//            loader.setController(gamecontroller);
+//            loader.<OTHGameController>getController().initModel(serverOut, sIn);
+//            loader.<OTHGameController>getController().initData(nameInputField.getText(), loginButton.getScene().getWindow());
+//            loader.<OTHGameController>getController().initSettings(bot, battleBox.isSelected());
+//            gamestage.setScene(new Scene(loader.load()));
+
+
             loader = new FXMLLoader(getClass().getResource("/view/OTHgameForm.fxml"));
             gamestage.setScene(new Scene(loader.load()));
             OTHGameController gamecontroller = loader.<OTHGameController>getController();
+            System.out.println(gamecontroller);
             gamecontroller.initModel(serverOut, sIn);
             gamecontroller.initData(nameInputField.getText(), loginButton.getScene().getWindow());
             gamecontroller.initSettings(bot, battleBox.isSelected());
@@ -195,6 +207,7 @@ public class Controller implements Runnable {
                     newScrene = false;
                 }
             }
+            System.out.println("----------------------------------------------------------------------");
         }).start();
     }
 
@@ -248,6 +261,7 @@ public class Controller implements Runnable {
         loginButton.setDisable(false);
         serverOut.sendToServer("bye");
     }
+
 
 
 }

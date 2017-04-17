@@ -5,7 +5,7 @@ import model.OthelloBoard;
 
 public class OthelloAI extends AIClass {
 
-    private static final int SEARCHDEPHT = 15;
+    private static final int SEARCHDEPHT = 5;
 
     ArrayList<Integer> movesDone = new ArrayList<Integer>();
     int move;
@@ -56,14 +56,12 @@ public class OthelloAI extends AIClass {
                 ArrayList<Integer> possiblemoves = (ArrayList<Integer>) board.findPossibleMoves(token).clone();
                 for(Integer move: possiblemoves) {
 
-                    System.out.println(possiblemoves);
                     OthelloBoard clone = (OthelloBoard) board.clone();
                     clone.flipPaths(move, token);
 
                     currentProcessingMove = move;
                     calculateMove(clone, false, 0, 0);
                 }
-                System.out.println("Contains " + possiblemoves.contains(bestMove));
                 return bestMove;
             } catch (CloneNotSupportedException e) {
                 e.printStackTrace();
@@ -79,7 +77,7 @@ public class OthelloAI extends AIClass {
             if (walkingScore > bestMoveValue || bestMoveValue == -1) {
                 bestMoveValue = walkingScore;
                 bestMove = currentProcessingMove;
-                System.out.println("New best move " + currentProcessingMove);
+                System.out.println("New move " + currentProcessingMove);
             }
             return;
         }
@@ -139,10 +137,10 @@ public class OthelloAI extends AIClass {
 
         int cornerpoints = 0;
         if (proposedMove == 0 || proposedMove == 7 || proposedMove == 63 || proposedMove == 56) {
-            cornerpoints = 50;
+            cornerpoints = 64;
         }
 
-       return (int) ((score + cornerpoints) / ((depth +1) * 0.5));
+       return (int) ((score + cornerpoints) / ((depth +1) * 1));
     }
 
 

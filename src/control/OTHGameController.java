@@ -41,8 +41,8 @@ public class OTHGameController {
     private int columnSelected;
     private String ownName;
     private String opponentName;
-    private char ownToken;
-    private char oppToken;
+    private Character ownToken;
+    private Character oppToken;
     private Window oldWindow;
     private String lastMsg = "";
     private String lastMove = "";
@@ -126,20 +126,16 @@ public class OTHGameController {
      * Update het bord aan de hand van de opgeslagen coordinaten met de tokens
      */
     private void generateBoard() {
-        Platform.runLater(()->{
-            for (int x = 0; x < 8; x++) {
-                for (int y = 0; y < 8; y++) {
-                    cell[x][y].getChildren().clear();
-                    OthelloCoordinate coord;
-                    coord = board.getCoordinate(x, y);
-                    if (coord != null) {
-                        setTeken(coord.getX(), coord.getY(), coord.getToken());
-                    }
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                OthelloCoordinate coord;
+                coord = board.getCoordinate(x, y);
+                if (coord != null) {
+                    setTeken(coord.getX(), coord.getY(), coord.getToken());
                 }
-
             }
 
-        });
+        }
     }
 
     /**
@@ -147,16 +143,18 @@ public class OTHGameController {
      */
     private void controlGame() {
         new Thread(() -> {
-
-            try {
-                while (check == 1) {
-                    checkColor();
+            while(true) {
+                try {
+                    while (check == 1) {
+                        checkColor();
+                    }
+                    while (check == 2) {
+                        playGame();
+                    }
+                    Thread.sleep(150);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
-                while (check == 2) {
-                    playGame();
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
         }).start();
     }
@@ -205,7 +203,6 @@ public class OTHGameController {
      * Deze functie kijkt wie er aan de beurt is en of het spel klaar is.
      */
     private void playGame() {
-        generateBoard();
         String message = sIn.getMove();
         //if (!message.equals(lastMove)) {
             if (message.contains(opponentName)) {
@@ -221,9 +218,8 @@ public class OTHGameController {
         if (sIn.endOfGame()) {
             System.out.println(getGameResult());
             generateBoard();
-            sIn.Reset();
-            //resetBoard();
             EoG.getEoMform(getGameResult());
+            resetGame();
             System.out.println("Schermutseling is voorbij!");
         }
         try {
@@ -241,16 +237,11 @@ public class OTHGameController {
     private void processOpponentMove(String message) {
         updateLabel(statusLabel, opponentName + " is aan de beurt!");
         int move = parseMove(message);
-        board.flipPaths(move, oppToken);
-        generateBoard();
         if (withAI) {
             moveToDo = othAI.getNewMove(move);
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
+        board.flipPaths(move, oppToken);
+        generateBoard();
         lastMove = message;
     }
 
@@ -267,16 +258,16 @@ public class OTHGameController {
                 generateBoard();
                 sendCommand("move " + moveToDo);
                 while (!sIn.endOfGame() && othAI.getBoard().findPossibleMoves(oppToken).size() == 0) {
-                    try {
-                        Thread.sleep(300);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     moveToDo = othAI.getNewMove(-1);
                     if (moveToDo != -1) {
                         board.flipPaths(moveToDo, ownToken);
                         generateBoard();
                         sendCommand("move " + moveToDo);
+                    }
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -324,22 +315,26 @@ public class OTHGameController {
     }
 
     private void resetData() {
-        oppToken = ' ';
-        ownToken = ' ';
+        oppToken = null;
+        ownToken = null;
+        ownName = "";
         opponentName = "";
-        check = 0;
+        moveToDo=-1;
+        lastMsg = "";
+        lastMove=  "";
     }
 
     private void Exit() {
-        Platform.runLater(() -> {
-            clearBoard();
-            Stage primaryStage = (Stage) oldWindow;
-            primaryStage.show();
-            check = 1;
-            gridPane.getScene().getWindow().hide();
-            Controller.newGame = true;
-            Controller.challengeOpen = true;
-        });
+        check = 1;
+
+        //clearBoard();
+        Stage primaryStage = (Stage) oldWindow;
+        primaryStage.show();
+        //check = 1;
+        //gridPane.getScene().getWindow().hide();
+        Controller.newGame = true;
+        Controller.challengeOpen = true;
+
     }
 
     /**
@@ -347,14 +342,41 @@ public class OTHGameController {
      */
     private void resetBoard() {
         Platform.runLater(() -> {
+            resetData();
             if (withAI) {
                 othAI.reset();
             }
             sIn.Reset();
+            clearBoard();
             board.reset();
             if (tournament) {
-                Exit();
+                doQuit();
             }
+            check=1;
+            Stage primaryStage = (Stage) oldWindow;
+            primaryStage.show();
+            //check = 1;
+            gridPane.getScene().getWindow().hide();
+        });
+    }
+
+    private void resetGame(){
+        check = 0;
+        clearBoard();
+        sIn.Reset();
+        resetData();
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        check = 0;
+        Platform.runLater(()->{
+            Controller.newGame = true;
+            Stage primaryStage = (Stage) oldWindow;
+            primaryStage.show();
+            //check = 1;
+            gridPane.getScene().getWindow().hide();
         });
     }
 
@@ -364,8 +386,8 @@ public class OTHGameController {
     @FXML
     public void doQuit() {
         sendCommand("forfeit");
-        resetBoard();
-        Exit();
+        resetGame();
+        //Exit();
     }
 
     /**
@@ -427,7 +449,7 @@ public class OTHGameController {
         }
 
         private void handleMouseClick() {
-            //if (!withAI) {
+            if (!withAI) {
                 OthelloCoordinate coord = new OthelloCoordinate((row * 8 + column));
                 coord.setToken(ownToken);
                 if (myTurn) {
@@ -439,7 +461,7 @@ public class OTHGameController {
                         myTurn = false;
                     }
                 }
-           // }
+            }
         }
     }
 }
