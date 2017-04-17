@@ -71,7 +71,7 @@ public class OthelloAI extends AIClass {
                 e.printStackTrace();
                 return -1;
             }
-        }else{
+        } else{
             return -1;
         }
     }
@@ -80,7 +80,8 @@ public class OthelloAI extends AIClass {
         System.out.println("checking move");
         if (depth >= SEARCHDEPHT) {
             System.out.println("Now considering. " + currentProcessingMove);
-            int opponentmoves = board.findPossibleMoves(oppositeToken).size();
+            OthelloBoard clone = (OthelloBoard) board.clone();
+            int opponentmoves = moveEvaluator(clone, currentProcessingMove, true);
 
             if (opponentmoves < bestMoveValue || bestMoveValue == -1) {
                 bestMoveValue = opponentmoves;
@@ -112,12 +113,39 @@ public class OthelloAI extends AIClass {
                 calculateMove(board, true, ++depth);
             }
 
+            // Enemy player always chooses the best possible move available
+            int bestscore = -1;
+            int bestmove = -1;
             for (Integer move: possiblemoves) {
                 OthelloBoard clone = (OthelloBoard) board.clone();
-                clone.flipPaths(move, oppositeToken);
-                calculateMove(clone, true, ++depth);
+                int score = moveEvaluator(clone, move, false);
+                if (score > bestscore || bestscore == -1) {
+                    bestscore = score;
+                    bestmove = move;
+                }
             }
+            OthelloBoard clone = (OthelloBoard) board.clone();
+            clone.flipPaths(bestmove, oppositeToken);
+            calculateMove(clone, true, ++depth);
         }
+    }
+
+
+    /**
+     * Gives a score to a specific move
+     * @param currentBoard The current board state
+     * @param proposedMove Move to evaluate
+     * @return Score of the propesed move
+     */
+    public int moveEvaluator(OthelloBoard currentBoard, int proposedMove, boolean myturn){
+        char currenttoken = myturn ? token : oppositeToken;
+        char currentOpositeToken = myturn ? oppositeToken : token;
+
+        currentBoard.flipPaths(proposedMove, currenttoken);
+
+        int opponentMoveCount = currentBoard.findPossibleMoves(currentOpositeToken).size();
+
+        return 0 - opponentMoveCount;
     }
 
 
