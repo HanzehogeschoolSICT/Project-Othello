@@ -155,6 +155,7 @@ public class BKEGameController {
                         System.out.print("");
                         check = 0;
                         Platform.runLater(() -> quit());
+                        quitButton.setDisable(false);
                         //   EoG.getEoMform(getGameResult());
                         Thread.currentThread().interrupt();
                     }
