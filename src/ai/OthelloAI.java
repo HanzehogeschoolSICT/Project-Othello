@@ -5,7 +5,7 @@ import model.OthelloBoard;
 
 public class OthelloAI extends AIClass {
 
-    private static final int SEARCHDEPHT = 5;
+    private static final int SEARCHDEPHT = 16;
 
     ArrayList<Integer> movesDone = new ArrayList<Integer>();
     int move;
@@ -77,7 +77,6 @@ public class OthelloAI extends AIClass {
             if (walkingScore > bestMoveValue || bestMoveValue == -1) {
                 bestMoveValue = walkingScore;
                 bestMove = currentProcessingMove;
-                System.out.println("New move " + currentProcessingMove);
             }
             return;
         }

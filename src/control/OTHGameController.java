@@ -3,6 +3,7 @@ import ai.OthelloAI;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -53,6 +54,7 @@ public class OTHGameController {
     private boolean tournament;
     private int moveToDo;
     private String gameResult;
+    private long time;
 
     public OTHGameController() {
     }
@@ -206,11 +208,17 @@ public class OTHGameController {
         String message = sIn.getMove();
         //if (!message.equals(lastMove)) {
             if (message.contains(opponentName)) {
+                time = System.currentTimeMillis();
                 processOpponentMove(message);
                 generateBoard();
             }
        // }
         if (sIn.getTurn().contains("YOURTURN")) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             processOwnMove();
             generateBoard();
         }
@@ -257,11 +265,13 @@ public class OTHGameController {
                 board.flipPaths(moveToDo, ownToken);
                 generateBoard();
                 sendCommand("move " + moveToDo);
+                System.out.println("Deze move nam seconden: " + (System.currentTimeMillis()-time)/1000);
                 while (!sIn.endOfGame() && othAI.getBoard().findPossibleMoves(oppToken).size() == 0) {
                     moveToDo = othAI.getNewMove(-1);
                     if (moveToDo != -1) {
                         board.flipPaths(moveToDo, ownToken);
                         generateBoard();
+                        System.out.println("Deze move nam seconden: " + (System.currentTimeMillis()-time)/1000);
                         sendCommand("move " + moveToDo);
                     }
                     try {
@@ -370,6 +380,7 @@ public class OTHGameController {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        Controller.challengeOpen = true;
         check = 0;
         Platform.runLater(()->{
             Controller.newGame = true;
