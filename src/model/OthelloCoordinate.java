@@ -1,6 +1,6 @@
 package model;
 
-public class OthelloCoordinate {
+public class OthelloCoordinate implements Cloneable {
 
 	int x;
 	int y;
@@ -63,5 +63,12 @@ public class OthelloCoordinate {
 	@Override
 	public String toString(){
 		return "x = " + x + " y = " + y + " token = " + token;
+	}
+
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		OthelloCoordinate newcoord = new OthelloCoordinate(x,y);
+		newcoord.setToken(token);
+		return newcoord;
 	}
 }

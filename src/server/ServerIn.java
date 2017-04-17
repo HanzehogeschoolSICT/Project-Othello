@@ -172,6 +172,7 @@ public class ServerIn implements Runnable {
     }
 
     public void Reset(){
+        oppName="";
         message = "";
         endOfGame = false;
         move = "";

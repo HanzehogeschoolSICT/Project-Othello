@@ -19,7 +19,8 @@ public static void getEoMform(String gameResult){
         alert.setTitle("Spel beeindigd");
         alert.setHeaderText(gameResult);
         alert.setContentText("Echt fantastisch!!");
-        alert.showAndWait();
+        alert.show();
+        //alert.showAndWait();
 
     });
     }

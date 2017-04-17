@@ -3,6 +3,7 @@ import ai.OthelloAI;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -41,8 +42,8 @@ public class OTHGameController {
     private int columnSelected;
     private String ownName;
     private String opponentName;
-    private char ownToken;
-    private char oppToken;
+    private Character ownToken;
+    private Character oppToken;
     private Window oldWindow;
     private String lastMsg = "";
     private String lastMove = "";
@@ -53,6 +54,7 @@ public class OTHGameController {
     private boolean tournament;
     private int moveToDo;
     private String gameResult;
+    private long time;
 
     public OTHGameController() {
     }
@@ -144,16 +146,18 @@ public class OTHGameController {
      */
     private void controlGame() {
         new Thread(() -> {
-
-            try {
-                while (check == 1) {
-                    checkColor();
+            while(true) {
+                try {
+                    while (check == 1) {
+                        checkColor();
+                    }
+                    while (check == 2) {
+                        playGame();
+                    }
+                    Thread.sleep(150);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
-                while (check == 2) {
-                    playGame();
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
         }).start();
     }
@@ -202,15 +206,20 @@ public class OTHGameController {
      * Deze functie kijkt wie er aan de beurt is en of het spel klaar is.
      */
     private void playGame() {
-        generateBoard();
         String message = sIn.getMove();
-        if (!message.equals(lastMove)) {
+        //if (!message.equals(lastMove)) {
             if (message.contains(opponentName)) {
+                time = System.currentTimeMillis();
                 processOpponentMove(message);
                 generateBoard();
             }
-        }
+       // }
         if (sIn.getTurn().contains("YOURTURN")) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             processOwnMove();
             generateBoard();
         }
@@ -218,9 +227,9 @@ public class OTHGameController {
         if (sIn.endOfGame()) {
             System.out.println(getGameResult());
             generateBoard();
-            resetBoard();
             EoG.getEoMform(getGameResult());
             quitButton.setDisable(false);
+            resetGame();
             System.out.println("Schermutseling is voorbij!");
         }
         try {
@@ -258,11 +267,13 @@ public class OTHGameController {
                 board.flipPaths(moveToDo, ownToken);
                 generateBoard();
                 sendCommand("move " + moveToDo);
+                System.out.println("Deze move nam seconden: " + (System.currentTimeMillis()-time)/1000);
                 while (!sIn.endOfGame() && othAI.getBoard().findPossibleMoves(oppToken).size() == 0) {
                     moveToDo = othAI.getNewMove(-1);
                     if (moveToDo != -1) {
                         board.flipPaths(moveToDo, ownToken);
                         generateBoard();
+                        System.out.println("Deze move nam seconden: " + (System.currentTimeMillis()-time)/1000);
                         sendCommand("move " + moveToDo);
                     }
                     try {
@@ -316,22 +327,26 @@ public class OTHGameController {
     }
 
     private void resetData() {
-        oppToken = ' ';
-        ownToken = ' ';
+        oppToken = null;
+        ownToken = null;
+        ownName = "";
         opponentName = "";
-        check = 0;
+        moveToDo=-1;
+        lastMsg = "";
+        lastMove=  "";
     }
 
     private void Exit() {
-        Platform.runLater(() -> {
-            clearBoard();
-            Stage primaryStage = (Stage) oldWindow;
-            primaryStage.show();
-            check = 1;
-            gridPane.getScene().getWindow().hide();
-            Controller.newGame = true;
-            Controller.challengeOpen = true;
-        });
+        check = 1;
+
+        //clearBoard();
+        Stage primaryStage = (Stage) oldWindow;
+        primaryStage.show();
+        //check = 1;
+        //gridPane.getScene().getWindow().hide();
+        Controller.newGame = true;
+        Controller.challengeOpen = true;
+
     }
 
     /**
@@ -339,14 +354,42 @@ public class OTHGameController {
      */
     private void resetBoard() {
         Platform.runLater(() -> {
+            resetData();
             if (withAI) {
                 othAI.reset();
             }
             sIn.Reset();
+            clearBoard();
             board.reset();
             if (tournament) {
-                Exit();
+                doQuit();
             }
+            check=1;
+            Stage primaryStage = (Stage) oldWindow;
+            primaryStage.show();
+            //check = 1;
+            gridPane.getScene().getWindow().hide();
+        });
+    }
+
+    private void resetGame(){
+        check = 0;
+        clearBoard();
+        sIn.Reset();
+        resetData();
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Controller.challengeOpen = true;
+        check = 0;
+        Platform.runLater(()->{
+            Controller.newGame = true;
+            Stage primaryStage = (Stage) oldWindow;
+            primaryStage.show();
+            //check = 1;
+            gridPane.getScene().getWindow().hide();
         });
     }
 
@@ -356,8 +399,8 @@ public class OTHGameController {
     @FXML
     public void doQuit() {
         sendCommand("forfeit");
-        resetBoard();
-        Exit();
+        resetGame();
+        //Exit();
     }
 
     /**

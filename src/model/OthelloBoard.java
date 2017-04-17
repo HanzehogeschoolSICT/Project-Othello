@@ -2,16 +2,48 @@ package model;
 import java.util.ArrayList;
 
 
-public class OthelloBoard {
+public class OthelloBoard implements Cloneable{
 	ArrayList<OthelloCoordinate> board = new ArrayList<OthelloCoordinate>();
 	private ArrayList<Integer> possibleMoves = new ArrayList<Integer>();
 	char ownToken;
 	
 	public OthelloBoard(char c){
 		ownToken = c;
-		reset();		
+		reset();
 	}
-	
+
+	OthelloBoard(ArrayList<OthelloCoordinate> board, ArrayList<Integer> possibleMoves, char ownToken) {
+		this.board = board;
+		this.possibleMoves = possibleMoves;
+		this.ownToken = ownToken;
+	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		ArrayList<OthelloCoordinate> boardclone = new ArrayList<>();
+		ArrayList<Integer> possibleMovesClone = (ArrayList<Integer>) possibleMoves.clone();
+		for (OthelloCoordinate coord: board) {
+			boardclone.add((OthelloCoordinate) coord.clone());
+		}
+		return new OthelloBoard(boardclone, possibleMovesClone, ownToken);
+	}
+
+	/**
+	 * Gets the current count of tiles on the board of a specific token
+	 * @param token to count the score of
+	 * @return amount of disks on the board.
+	 */
+	public int getCurrentScore(char token){
+		int count = 0;
+
+		for (OthelloCoordinate coord : board) {
+			if (coord.getToken() == token) {
+				count++;
+			}
+		}
+		return count;
+	}
+
 	/**
      * voegt een coordinaat toe an het bord. Als het coordinaat al in het bord zit,
      *  dan verandert het het token naar het token van het nieuwe coordinaat.
@@ -21,8 +53,7 @@ public class OthelloBoard {
      * @param c De kleur van het coordinaat ('W' of 'B')
      */
 	public void addCoordinate(int x, int y, char c){
-		if(x >= 0 && x < 8 && y >= 0 && y < 8){
-			OthelloCoordinate coord = new OthelloCoordinate(x,y);
+		if(x >= 0 && x < 8 && y >= 0 && y < 8){			OthelloCoordinate coord = new OthelloCoordinate(x,y);
 			coord.setToken(c);
 			if(!board.contains(coord)){
 				board.add(coord);
@@ -42,8 +73,8 @@ public class OthelloBoard {
      */
 	public void addCoordinate(int index, char c){
 		if(index >= 0 && index <64){
-			OthelloCoordinate coord = new OthelloCoordinate(index);
-			coord.setToken(c);
+				OthelloCoordinate coord = new OthelloCoordinate(index);
+				coord.setToken(c);
 			if(!hasCoord(coord)){
 				board.add(coord);
 			}else {
@@ -169,7 +200,7 @@ public class OthelloBoard {
      * Kijkt voor een bepaald coordinaat of er een legaal pad is naar andere steentjes.
      * @param coord Het coordinaat waarvan we kijken of hij een pad heeft
      * @param token De kleur die de zet gaat maken.
-     * @return boolean true als er minstens één pad gevonden is, false als er geen pad te vinden is.
+     * @return boolean true als er minstens ï¿½ï¿½n pad gevonden is, false als er geen pad te vinden is.
      */
 	private boolean hasPossiblePath(OthelloCoordinate coord, char token) {
 		for(int i=-1;i<=1;i++){
@@ -223,15 +254,13 @@ public class OthelloBoard {
 	
 	/**
      * Kijkt of een bepaald coordinaat binnen het bord zit.
-     * @param coordIn Het coordinaat.
+     * @param coord Het coordinaat.
      * @return boolean true als het coordinaat binnen het bord zit, fals als het niet binnen het bord zit.
      */
 	private boolean isInBoard(OthelloCoordinate coord){
 		int x = coord.getX();
 		int y = coord.getY();
 		return ((x>=0 && x < 8) && (y>=0 && y < 8));
-		
-		
 	}
 
 	/**
