@@ -5,10 +5,9 @@ import model.OthelloBoard;
 
 public class OthelloAI extends AIClass {
 
-    private static final int SEARCHDEPHT = 9;
+    private static final int SEARCHDEPHT = 15;
 
     ArrayList<Integer> movesDone = new ArrayList<Integer>();
-    ArrayList<Integer> possibleMoves;
     int move;
     OthelloBoard board;
     char token;
@@ -51,21 +50,20 @@ public class OthelloAI extends AIClass {
     private int calculateMove(){
         bestMove = null;
         bestMoveValue = -1;
-        possibleMoves = board.findPossibleMoves(token);
+        ArrayList<Integer> possibleMoves = board.findPossibleMoves(token);
         if(possibleMoves.size() > 0){
             try {
                 ArrayList<Integer> possiblemoves = (ArrayList<Integer>) board.findPossibleMoves(token).clone();
                 for(Integer move: possiblemoves) {
+
+                    System.out.println(possiblemoves);
                     OthelloBoard clone = (OthelloBoard) board.clone();
                     clone.flipPaths(move, token);
 
-                    System.out.println("CLONE " + (board.getBoard() == clone.getBoard()));
-                    System.out.println("CLONE2 " + (board.getBoard().get(0) == clone.getBoard().get(0)));
-                    System.out.println("CLONE3 " + (board.findPossibleMoves(token) == clone.findPossibleMoves(token)));
-
                     currentProcessingMove = move;
-                    calculateMove(clone, false, 0);
+                    calculateMove(clone, false, 0, 0);
                 }
+                System.out.println("Contains " + possiblemoves.contains(bestMove));
                 return bestMove;
             } catch (CloneNotSupportedException e) {
                 e.printStackTrace();
@@ -76,15 +74,10 @@ public class OthelloAI extends AIClass {
         }
     }
 
-    private void calculateMove(OthelloBoard board, boolean myturn, int depth) throws CloneNotSupportedException {
-        System.out.println("checking move");
+    private void calculateMove(OthelloBoard board, boolean myturn, int depth, int walkingScore) throws CloneNotSupportedException {
         if (depth >= SEARCHDEPHT) {
-            System.out.println("Now considering. " + currentProcessingMove);
-            OthelloBoard clone = (OthelloBoard) board.clone();
-            int opponentmoves = moveEvaluator(clone, currentProcessingMove, true);
-
-            if (opponentmoves < bestMoveValue || bestMoveValue == -1) {
-                bestMoveValue = opponentmoves;
+            if (walkingScore > bestMoveValue || bestMoveValue == -1) {
+                bestMoveValue = walkingScore;
                 bestMove = currentProcessingMove;
                 System.out.println("New best move " + currentProcessingMove);
             }
@@ -96,13 +89,14 @@ public class OthelloAI extends AIClass {
 
             // No possible moves, give turn to opponent
             if (possiblemoves.size() == 0) {
-                calculateMove(board, false, ++depth);
+                calculateMove(board, false, ++depth, walkingScore);
             }
 
             for (Integer move: possiblemoves) {
                 OthelloBoard clone = (OthelloBoard) board.clone();
+                int newscore = moveEvaluator(clone, move, true, depth);
                 clone.flipPaths(move, token);
-                calculateMove(clone, false, ++depth);
+                calculateMove(clone, false, ++depth, walkingScore + newscore);
             }
         }
         else {
@@ -110,23 +104,23 @@ public class OthelloAI extends AIClass {
 
             // No possible moves, give turn to opponent
             if (possiblemoves.size() == 0) {
-                calculateMove(board, true, ++depth);
+                calculateMove(board, true, ++depth, walkingScore);
             }
 
             // Enemy player always chooses the best possible move available
             int bestscore = -1;
-            int bestmove = -1;
+            int enemyBestMove = -1;
             for (Integer move: possiblemoves) {
                 OthelloBoard clone = (OthelloBoard) board.clone();
-                int score = moveEvaluator(clone, move, false);
+                int score = moveEvaluator(clone, move, false, depth);
                 if (score > bestscore || bestscore == -1) {
                     bestscore = score;
-                    bestmove = move;
+                    enemyBestMove = move;
                 }
             }
             OthelloBoard clone = (OthelloBoard) board.clone();
-            clone.flipPaths(bestmove, oppositeToken);
-            calculateMove(clone, true, ++depth);
+            clone.flipPaths(enemyBestMove, oppositeToken);
+            calculateMove(clone, true, ++depth, walkingScore - bestscore);
         }
     }
 
@@ -137,15 +131,18 @@ public class OthelloAI extends AIClass {
      * @param proposedMove Move to evaluate
      * @return Score of the propesed move
      */
-    public int moveEvaluator(OthelloBoard currentBoard, int proposedMove, boolean myturn){
+    public int moveEvaluator(OthelloBoard currentBoard, int proposedMove, boolean myturn, int depth){
         char currenttoken = myturn ? token : oppositeToken;
-        char currentOpositeToken = myturn ? oppositeToken : token;
-
+        //char currentOpositeToken = myturn ? oppositeToken : token;
         currentBoard.flipPaths(proposedMove, currenttoken);
+        int score = currentBoard.getCurrentScore(currenttoken);
 
-        int opponentMoveCount = currentBoard.findPossibleMoves(currentOpositeToken).size();
+        int cornerpoints = 0;
+        if (proposedMove == 0 || proposedMove == 7 || proposedMove == 63 || proposedMove == 56) {
+            cornerpoints = 50;
+        }
 
-        return 0 - opponentMoveCount;
+       return (int) ((score + cornerpoints) / ((depth +1) * 0.5));
     }
 
 
@@ -156,12 +153,14 @@ public class OthelloAI extends AIClass {
      */
     @Override
     public void processMove(int input, char c) {
-    	movesDone.add(input);
-    	if(c == 'p'){
-            adaptBoard(input,oppositeToken);
-    	} else{
-    		adaptBoard(input,token);
-    	}
+    	if(input != -1) {
+            movesDone.add(input);
+            if (c == 'p') {
+                adaptBoard(input, oppositeToken);
+            } else {
+                adaptBoard(input, token);
+            }
+        }
     }
 
     /**

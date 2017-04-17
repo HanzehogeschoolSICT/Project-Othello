@@ -29,6 +29,22 @@ public class OthelloBoard implements Cloneable{
 	}
 
 	/**
+	 * Gets the current count of tiles on the board of a specific token
+	 * @param token to count the score of
+	 * @return amount of disks on the board.
+	 */
+	public int getCurrentScore(char token){
+		int count = 0;
+
+		for (OthelloCoordinate coord : board) {
+			if (coord.getToken() == token) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	/**
      * voegt een coordinaat toe an het bord. Als het coordinaat al in het bord zit,
      *  dan verandert het het token naar het token van het nieuwe coordinaat.
      *  Werkt met x en y coordinaten

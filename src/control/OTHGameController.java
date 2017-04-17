@@ -126,16 +126,20 @@ public class OTHGameController {
      * Update het bord aan de hand van de opgeslagen coordinaten met de tokens
      */
     private void generateBoard() {
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                OthelloCoordinate coord;
-                coord = board.getCoordinate(x, y);
-                if (coord != null) {
-                    setTeken(coord.getX(), coord.getY(), coord.getToken());
+        Platform.runLater(()->{
+            for (int x = 0; x < 8; x++) {
+                for (int y = 0; y < 8; y++) {
+                    cell[x][y].getChildren().clear();
+                    OthelloCoordinate coord;
+                    coord = board.getCoordinate(x, y);
+                    if (coord != null) {
+                        setTeken(coord.getX(), coord.getY(), coord.getToken());
+                    }
                 }
+
             }
 
-        }
+        });
     }
 
     /**
@@ -203,12 +207,12 @@ public class OTHGameController {
     private void playGame() {
         generateBoard();
         String message = sIn.getMove();
-        if (!message.equals(lastMove)) {
+        //if (!message.equals(lastMove)) {
             if (message.contains(opponentName)) {
                 processOpponentMove(message);
                 generateBoard();
             }
-        }
+       // }
         if (sIn.getTurn().contains("YOURTURN")) {
             processOwnMove();
             generateBoard();
@@ -217,7 +221,8 @@ public class OTHGameController {
         if (sIn.endOfGame()) {
             System.out.println(getGameResult());
             generateBoard();
-            resetBoard();
+            sIn.Reset();
+            //resetBoard();
             EoG.getEoMform(getGameResult());
             System.out.println("Schermutseling is voorbij!");
         }
@@ -236,11 +241,16 @@ public class OTHGameController {
     private void processOpponentMove(String message) {
         updateLabel(statusLabel, opponentName + " is aan de beurt!");
         int move = parseMove(message);
-        if (withAI) {
-            moveToDo = othAI.getNewMove(move);
-        }
         board.flipPaths(move, oppToken);
         generateBoard();
+        if (withAI) {
+            moveToDo = othAI.getNewMove(move);
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         lastMove = message;
     }
 
@@ -257,16 +267,16 @@ public class OTHGameController {
                 generateBoard();
                 sendCommand("move " + moveToDo);
                 while (!sIn.endOfGame() && othAI.getBoard().findPossibleMoves(oppToken).size() == 0) {
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     moveToDo = othAI.getNewMove(-1);
                     if (moveToDo != -1) {
                         board.flipPaths(moveToDo, ownToken);
                         generateBoard();
                         sendCommand("move " + moveToDo);
-                    }
-                    try {
-                        Thread.sleep(300);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -417,7 +427,7 @@ public class OTHGameController {
         }
 
         private void handleMouseClick() {
-            if (!withAI) {
+            //if (!withAI) {
                 OthelloCoordinate coord = new OthelloCoordinate((row * 8 + column));
                 coord.setToken(ownToken);
                 if (myTurn) {
@@ -429,7 +439,7 @@ public class OTHGameController {
                         myTurn = false;
                     }
                 }
-            }
+           // }
         }
     }
 }
