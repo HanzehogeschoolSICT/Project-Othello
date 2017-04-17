@@ -88,6 +88,7 @@ public class OTHGameController {
      */
     @FXML
     public void doForfeit() {
+        quitButton.setDisable(false);
         sendCommand("forfeit");
         check = 0;
     }
@@ -219,6 +220,7 @@ public class OTHGameController {
             generateBoard();
             resetBoard();
             EoG.getEoMform(getGameResult());
+            quitButton.setDisable(false);
             System.out.println("Schermutseling is voorbij!");
         }
         try {

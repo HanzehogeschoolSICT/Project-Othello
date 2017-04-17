@@ -64,6 +64,7 @@ public class BKEGameController {
         oldWindow = window;
         ownNameLabel.setText(ownName);
         withAI = AI;
+        quitButton.setDisable(true);
     }
 
     @FXML
@@ -221,6 +222,7 @@ public class BKEGameController {
     public void doForfeit() {
         serverOut.sendToServer("forfeit");
         check = 0;
+        quitButton.setDisable(false);
     }
 
     public String getGameResult() {

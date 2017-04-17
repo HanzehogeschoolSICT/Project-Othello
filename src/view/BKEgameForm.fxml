@@ -31,7 +31,7 @@
       <Label fx:id="oppNameLabel" layoutX="406.0" layoutY="53.0" text="Tegenstander" />
       <Label layoutX="401.0" layoutY="93.0" text="Beurt:" />
       <Label fx:id="turnLabel" layoutX="406.0" layoutY="110.0" text="De tegenstander is aan de beurt" />
-      <Button fx:id="quitButton" layoutX="400.0" layoutY="146.0" mnemonicParsing="false" onAction="#doQuit" text="Spel verlaten" />
+      <Button fx:id="quitButton" disable="true" layoutX="400.0" layoutY="146.0" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" onAction="#doQuit" text="Spel verlaten" />
       <Button fx:id="forfeitButton" layoutX="400.0" layoutY="184.0" mnemonicParsing="false" onAction="#doForfeit" prefHeight="31.0" prefWidth="105.0" text="Forfeit" />
    </children>
 </Pane>
